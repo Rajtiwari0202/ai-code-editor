@@ -7,6 +7,7 @@ The current version is a polished product prototype for the editor workspace. It
 ## Highlights
 
 - IDE-style workspace with explorer, editor, terminal, change review, and assistant panels.
+- Monaco-powered code editor with open tabs, editable file buffers, search, dirty state, save, and reset controls.
 - AI workflow model built around planning, guarded patching, and verification.
 - Local-first product direction with explicit room for workspace indexing and secure command execution.
 - Next.js App Router, React 19, Tailwind CSS 4, and shadcn/radix-nova UI primitives.
@@ -20,6 +21,7 @@ The current version is a polished product prototype for the editor workspace. It
 - Tailwind CSS 4
 - shadcn/radix-nova components
 - Lucide React icons
+- Monaco Editor
 
 ## Getting Started
 
@@ -45,11 +47,12 @@ npm run start    # Start the production server
 app/
   globals.css       Global Tailwind theme and design tokens
   layout.tsx        Root metadata, fonts, and document shell
-  page.tsx          Main editor workspace experience
+  page.tsx          Home route that renders the editor workspace
+components/editor/  Product-specific editor workspace components
 components/ui/      Reusable shadcn/radix-nova primitives
 docs/               Architecture, roadmap, and deployment notes
 hooks/              Shared React hooks
-lib/                Shared utilities
+lib/                Shared utilities and workspace model data
 public/             Static assets
 ```
 

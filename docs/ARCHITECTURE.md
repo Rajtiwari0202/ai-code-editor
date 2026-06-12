@@ -14,11 +14,16 @@ Forge Editor is organized as a Next.js App Router application with a frontend-fi
 ```text
 Browser UI
   app/page.tsx
+    Route entry
+  components/editor/workspace.tsx
     Workspace shell
-    File explorer mock data
-    Editor preview
+    File explorer
+    Monaco editor
+    Open tabs and dirty state
     Terminal and task panels
     AI planning panel
+  lib/workspace-model.ts
+    Typed seed data for files, assistant steps, and verification tasks
 
 Design System
   app/globals.css
@@ -31,7 +36,7 @@ Framework
     Fonts and metadata
 ```
 
-The current app is intentionally static. It defines the product shape and interaction model without pretending to have workspace or AI execution implemented.
+The current app has a real client-side editor state model. It supports opening files, switching tabs, editing buffers, filtering the file tree, saving dirty state, and resetting a file to its seed content. Workspace persistence, local file access, AI execution, and command execution are still intentionally outside the browser-only surface.
 
 ## Recommended Runtime Architecture
 

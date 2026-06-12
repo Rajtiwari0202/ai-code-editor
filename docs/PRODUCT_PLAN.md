@@ -13,10 +13,13 @@ Status: complete in this pass.
 
 ## Phase 2: Real Editor State
 
-- Replace mock file data with a typed workspace model.
-- Add file tree interactions: open, close, rename, search, and dirty state.
-- Add a real code editor surface. Monaco is the strongest default choice.
-- Persist layout state in local storage.
+Status: partially complete.
+
+- Replace mock file data with a typed workspace model. Complete.
+- Add file tree interactions: open, close, search, and dirty state. Complete.
+- Add a real code editor surface with Monaco. Complete.
+- Add file rename/create/delete actions. Not started.
+- Persist layout state in local storage. Not started.
 - Add responsive fallbacks for small screens.
 
 ## Phase 3: Local Workspace Agent
