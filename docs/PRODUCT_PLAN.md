@@ -24,6 +24,10 @@ Status: partially complete.
 
 ## Phase 3: Local Workspace Agent
 
+Status: contract started.
+
+- Define local agent capabilities and approval boundaries. Complete.
+- Add server route contracts for plan, patch proposal, and verification filtering. Complete.
 - Create a separate Node process for privileged workspace operations.
 - Implement safe file reads with ignore-file support.
 - Implement patch application with preview and rollback.

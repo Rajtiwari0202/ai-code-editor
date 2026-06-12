@@ -24,6 +24,18 @@ Browser UI
     AI planning panel
   lib/workspace-model.ts
     Typed seed data for files, assistant steps, and verification tasks
+  app/api/plan/route.ts
+    Creates structured edit plans
+  app/api/patch/route.ts
+    Creates patch proposal metadata without writing files
+  app/api/verify/route.ts
+    Filters requested commands through the verification allowlist
+  lib/ai/*
+    AI-facing contracts and deterministic planner scaffolding
+  lib/verification/*
+    Verification command allowlist helpers
+  lib/workspace/*
+    Local agent manifest and approval boundary contracts
 
 Design System
   app/globals.css
@@ -36,7 +48,7 @@ Framework
     Fonts and metadata
 ```
 
-The current app has a real client-side editor state model. It supports opening files, switching tabs, editing buffers, filtering the file tree, saving dirty state, and resetting a file to its seed content. Workspace persistence, local file access, AI execution, and command execution are still intentionally outside the browser-only surface.
+The current app has a real client-side editor state model and safe server contracts. It supports opening files, switching tabs, editing buffers, filtering the file tree, saving dirty state, resetting a file to its seed content, generating deterministic plans, creating patch proposal metadata, and filtering verification commands. Workspace persistence, local file access, AI execution, and command execution are still intentionally outside the browser-only surface.
 
 ## Recommended Runtime Architecture
 
@@ -73,6 +85,8 @@ Verification Layer
 5. Agent requests model output, validates the patch, and applies it.
 6. Verification commands run in a constrained environment.
 7. UI shows diffs, command output, and remaining risk.
+
+The current implementation covers steps 1 through 4 with deterministic route handlers. Steps 5 through 7 require the local workspace agent.
 
 ## Security Boundaries
 

@@ -24,7 +24,7 @@ If the build passes, deploy to Vercel or another Node-compatible host.
 
 ## Environment Variables
 
-No environment variables are required for the current frontend prototype.
+No environment variables are required for the current frontend and deterministic API prototype.
 
 Future provider keys should be server-only:
 
@@ -54,3 +54,4 @@ The hosted UI should connect to it only after the user grants workspace access.
 - Metadata no longer uses generated defaults.
 - No secrets are committed.
 - Future backend endpoints keep privileged operations server-side.
+- `/api/plan`, `/api/patch`, and `/api/verify` return structured data but do not write files, run shell commands, or call external model providers yet.

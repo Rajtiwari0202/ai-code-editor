@@ -40,6 +40,7 @@ import {
   type AssistantStepState,
   type WorkspaceFile,
 } from "@/lib/workspace-model"
+import type { PatchProposalResponse, PlanResponse } from "@/lib/ai/contracts"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -80,6 +81,9 @@ export function EditorWorkspace() {
   const [assistantPrompt, setAssistantPrompt] = useState(
     "Refactor the prompt planning flow, keep diffs small, and explain the tests that prove it."
   )
+  const [generatedPlan, setGeneratedPlan] = useState<PlanResponse | null>(null)
+  const [patchProposal, setPatchProposal] = useState<PatchProposalResponse | null>(null)
+  const [assistantStatus, setAssistantStatus] = useState<"idle" | "loading" | "error">("idle")
 
   const activeFile = files.find((file) => file.path === activePath) ?? files[0]
   const dirtyFiles = files.filter((file) => file.status === "modified")
@@ -152,6 +156,50 @@ export function EditorWorkspace() {
     )
   }
 
+  async function generatePatchPlan() {
+    setAssistantStatus("loading")
+    setPatchProposal(null)
+
+    try {
+      const payload = {
+        intent: assistantPrompt,
+        activeFile: activeFile.path,
+        dirtyFiles: dirtyFiles.map((file) => file.path),
+      }
+
+      const planResponse = await fetch("/api/plan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+
+      if (!planResponse.ok) {
+        throw new Error("Unable to create plan")
+      }
+
+      const plan = (await planResponse.json()) as PlanResponse
+      setGeneratedPlan(plan)
+
+      const patchResponse = await fetch("/api/patch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          selectedStepIds: plan.steps.map((step) => step.id),
+        }),
+      })
+
+      if (!patchResponse.ok) {
+        throw new Error("Unable to create patch proposal")
+      }
+
+      setPatchProposal((await patchResponse.json()) as PatchProposalResponse)
+      setAssistantStatus("idle")
+    } catch {
+      setAssistantStatus("error")
+    }
+  }
+
   return (
     <main className="min-h-screen bg-background text-foreground">
       <div className="flex min-h-screen flex-col">
@@ -185,8 +233,12 @@ export function EditorWorkspace() {
           <aside className="border-t border-border bg-background lg:min-h-0 lg:border-l lg:border-t-0">
             <AssistantPanel
               activeFile={activeFile}
+              assistantStatus={assistantStatus}
               assistantPrompt={assistantPrompt}
               dirtyFiles={dirtyFiles}
+              generatedPlan={generatedPlan}
+              onGeneratePatchPlan={generatePatchPlan}
+              patchProposal={patchProposal}
               setAssistantPrompt={setAssistantPrompt}
             />
           </aside>
@@ -539,13 +591,21 @@ function BottomPanel({ dirtyFiles }: { dirtyFiles: WorkspaceFile[] }) {
 
 function AssistantPanel({
   activeFile,
+  assistantStatus,
   assistantPrompt,
   dirtyFiles,
+  generatedPlan,
+  onGeneratePatchPlan,
+  patchProposal,
   setAssistantPrompt,
 }: {
   activeFile: WorkspaceFile
+  assistantStatus: "idle" | "loading" | "error"
   assistantPrompt: string
   dirtyFiles: WorkspaceFile[]
+  generatedPlan: PlanResponse | null
+  onGeneratePatchPlan: () => void
+  patchProposal: PatchProposalResponse | null
   setAssistantPrompt: (prompt: string) => void
 }) {
   return (
@@ -581,17 +641,34 @@ function AssistantPanel({
           Current plan
         </div>
         <div className="space-y-3">
-          {assistantSteps.map((step) => (
-            <div className="rounded-lg border border-border bg-card p-3" key={step.title}>
-              <div className="flex items-start gap-3">
-                <StepIcon state={step.state} />
-                <div>
-                  <h3 className="text-sm font-medium">{step.title}</h3>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
+          {generatedPlan
+            ? generatedPlan.steps.map((step, index) => (
+                <div className="rounded-lg border border-border bg-card p-3" key={step.id}>
+                  <div className="flex items-start gap-3">
+                    <StepIcon state={index === 0 ? "done" : index === 1 ? "active" : "queued"} />
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-sm font-medium">{step.title}</h3>
+                        <span className="rounded border border-border px-1.5 py-0.5 text-[10px] uppercase text-muted-foreground">
+                          {step.risk}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          ))}
+              ))
+            : assistantSteps.map((step) => (
+                <div className="rounded-lg border border-border bg-card p-3" key={step.title}>
+                  <div className="flex items-start gap-3">
+                    <StepIcon state={step.state} />
+                    <div>
+                      <h3 className="text-sm font-medium">{step.title}</h3>
+                      <p className="mt-1 text-xs leading-5 text-muted-foreground">{step.detail}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
         </div>
 
         <div className="mt-5 rounded-lg border border-border bg-card p-3">
@@ -605,13 +682,46 @@ function AssistantPanel({
             patches, and verification output here.
           </p>
         </div>
+
+        {generatedPlan && (
+          <div className="mt-3 rounded-lg border border-border bg-card p-3">
+            <div className="mb-2 text-sm font-medium">Generated summary</div>
+            <p className="text-sm leading-6 text-muted-foreground">{generatedPlan.summary}</p>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {generatedPlan.verification.map((command) => (
+                <span
+                  className="rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[11px] text-muted-foreground"
+                  key={command}
+                >
+                  {command}
+                </span>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {patchProposal && (
+          <div className="mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">
+            <div className="mb-2 text-sm font-medium text-amber-900">Patch proposal</div>
+            <p className="text-sm leading-6 text-amber-800">{patchProposal.safetyNote}</p>
+            <pre className="mt-3 overflow-auto rounded border border-amber-200 bg-white p-2 text-xs text-amber-900">
+              {patchProposal.proposals[0]?.diffPreview}
+            </pre>
+          </div>
+        )}
+
+        {assistantStatus === "error" && (
+          <div className="mt-3 rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+            Could not generate a plan. Check the local API route and try again.
+          </div>
+        )}
       </div>
 
       <div className="border-t border-border p-3">
         <div className="flex gap-2">
-          <Button className="flex-1">
+          <Button className="flex-1" disabled={assistantStatus === "loading"} onClick={onGeneratePatchPlan}>
             <Zap data-icon="inline-start" />
-            Generate patch
+            {assistantStatus === "loading" ? "Planning..." : "Generate patch"}
           </Button>
           <Button variant="outline" size="icon-lg" aria-label="Open run history">
             <Clock3 />

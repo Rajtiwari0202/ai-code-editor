@@ -9,6 +9,7 @@ The current version is a polished product prototype for the editor workspace. It
 - IDE-style workspace with explorer, editor, terminal, change review, and assistant panels.
 - Monaco-powered code editor with open tabs, editable file buffers, search, dirty state, save, and reset controls.
 - AI workflow model built around planning, guarded patching, and verification.
+- Structured API routes for plan generation, patch proposals, and verification command filtering.
 - Local-first product direction with explicit room for workspace indexing and secure command execution.
 - Next.js App Router, React 19, Tailwind CSS 4, and shadcn/radix-nova UI primitives.
 - Documentation for architecture, roadmap, deployment, and contribution standards.
@@ -45,6 +46,7 @@ npm run start    # Start the production server
 
 ```text
 app/
+  api/              Safe planning, patch proposal, and verification route contracts
   globals.css       Global Tailwind theme and design tokens
   layout.tsx        Root metadata, fonts, and document shell
   page.tsx          Home route that renders the editor workspace
@@ -52,7 +54,7 @@ components/editor/  Product-specific editor workspace components
 components/ui/      Reusable shadcn/radix-nova primitives
 docs/               Architecture, roadmap, and deployment notes
 hooks/              Shared React hooks
-lib/                Shared utilities and workspace model data
+lib/                Shared utilities, workspace model data, AI contracts, and verification helpers
 public/             Static assets
 ```
 
@@ -65,7 +67,7 @@ public/             Static assets
 
 ## Current Status
 
-This repository currently ships the frontend application shell. It does not yet execute model calls, mutate local files, index a repository, or run commands from the browser. Those capabilities should be added behind explicit server-side boundaries and permission checks, as described in the architecture and product plan.
+This repository currently ships the frontend editor shell and safe API contracts for planning, patch proposals, and verification command filtering. It does not yet execute model calls, mutate local files, index a real repository, or run commands from the browser. Those capabilities should be added behind explicit server-side boundaries and permission checks, as described in the architecture and product plan.
 
 ## Deployment Target
 
