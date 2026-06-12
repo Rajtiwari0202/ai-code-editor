@@ -1,36 +1,73 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Forge Editor
+
+Forge Editor is a local-first AI code editor interface built with Next.js. It is designed around a simple principle: AI should help a developer understand, plan, patch, and verify code changes without hiding the reasoning or making the repository feel generated.
+
+The current version is a polished product prototype for the editor workspace. It establishes the application shell, interaction model, visual language, and documentation needed before connecting real workspace indexing, model providers, file writes, and deployment.
+
+## Highlights
+
+- IDE-style workspace with explorer, editor, terminal, change review, and assistant panels.
+- AI workflow model built around planning, guarded patching, and verification.
+- Local-first product direction with explicit room for workspace indexing and secure command execution.
+- Next.js App Router, React 19, Tailwind CSS 4, and shadcn/radix-nova UI primitives.
+- Documentation for architecture, roadmap, deployment, and contribution standards.
+
+## Tech Stack
+
+- Next.js 16 App Router
+- React 19
+- TypeScript
+- Tailwind CSS 4
+- shadcn/radix-nova components
+- Lucide React icons
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run dev      # Start the local development server
+npm run lint     # Run ESLint
+npm run build    # Create a production build
+npm run start    # Start the production server
+```
 
-## Learn More
+## Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```text
+app/
+  globals.css       Global Tailwind theme and design tokens
+  layout.tsx        Root metadata, fonts, and document shell
+  page.tsx          Main editor workspace experience
+components/ui/      Reusable shadcn/radix-nova primitives
+docs/               Architecture, roadmap, and deployment notes
+hooks/              Shared React hooks
+lib/                Shared utilities
+public/             Static assets
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Documentation
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Product Plan](./docs/PRODUCT_PLAN.md)
+- [Deployment](./docs/DEPLOYMENT.md)
+- [Contributing](./docs/CONTRIBUTING.md)
 
-## Deploy on Vercel
+## Current Status
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+This repository currently ships the frontend application shell. It does not yet execute model calls, mutate local files, index a repository, or run commands from the browser. Those capabilities should be added behind explicit server-side boundaries and permission checks, as described in the architecture and product plan.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Deployment Target
+
+The frontend can deploy cleanly to Vercel or any Node-compatible Next.js host. The future local workspace agent should run separately from the hosted web UI because it needs file-system and process access.
+
+## License
+
+Add a license before publishing the project publicly.
