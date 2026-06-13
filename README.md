@@ -110,6 +110,7 @@ npm run dev      # Start development server
 npm run lint     # Run ESLint
 npm run build    # Build for production
 npm run start    # Start production server
+npm run validate:env  # Check required deployment environment variables
 ```
 
 ## Documentation

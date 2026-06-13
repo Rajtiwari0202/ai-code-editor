@@ -43,6 +43,7 @@ Status: in progress.
 - Provision database.
 - Configure OAuth providers.
 - Configure model provider or local-model instructions.
+- Add environment validation command. Complete.
 - Verify WebContainer browser requirements in production.
 - Deploy to Vercel or another Node-compatible host.
 - Add release checklist and screenshots.
