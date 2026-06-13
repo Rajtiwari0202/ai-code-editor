@@ -60,9 +60,9 @@ interface ProjectTableProps {
   onUpdateProject?: (
     id: string,
     data: { title: string; description: string }
-  ) => Promise<void>;
-  onDeleteProject?: (id: string) => Promise<void>;
-  onDuplicateProject?: (id: string) => Promise<void>;
+  ) => Promise<unknown>;
+  onDeleteProject?: (id: string) => Promise<unknown>;
+  onDuplicateProject?: (id: string) => Promise<unknown>;
   
 }
 
@@ -208,14 +208,14 @@ export default function ProjectTable({
                   <div className="flex items-center gap-2">
                     <div className="w-8 h-8 rounded-full overflow-hidden">
                       <Image
-                        src={project.user.image || "/placeholder.svg"}
-                        alt={project.user.name}
+                        src={project.user.image || "/logo.svg"}
+                        alt={project.user.name || "Project owner"}
                         width={32}
                         height={32}
                         className="object-cover"
                       />
                     </div>
-                    <span className="text-sm">{project.user.name}</span>
+                    <span className="text-sm">{project.user.name || "Unknown user"}</span>
                   </div>
                 </TableCell>
                 <TableCell>

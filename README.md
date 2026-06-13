@@ -1,122 +1,129 @@
-# 🧠 Vibecode Editor – AI-Powered Web IDE
+# Forge Editor
 
-![Vibecode Editor Thumbnail](public/vibe-code-editor-thumbnaail.svg)
+Forge Editor is a browser-based AI code editor built with Next.js, Monaco Editor, WebContainers, NextAuth, Prisma, and local AI workflows. It gives developers a web IDE with project templates, file exploration, code editing, terminal execution, live preview, AI chat, and code completion.
 
-**Vibecode Editor** is a blazing-fast, AI-integrated web IDE built entirely in the browser using **Next.js App Router**, **WebContainers**, **Monaco Editor**, and **local LLMs via Ollama**. It offers real-time code execution, an AI-powered chat assistant, and support for multiple tech stacks — all wrapped in a stunning developer-first UI.
+The product direction is simple: keep AI useful, visible, and reviewable. The app should help a developer plan changes, edit code, run projects, and verify work without hiding important context or mutating code without approval.
 
----
+## Features
 
-## 🚀 Features
+- Authentication with NextAuth, Google, and GitHub providers.
+- Dashboard for creating, opening, starring, and managing playground projects.
+- Template-driven project creation for React, Next.js, Express, Hono, Vue, and Angular.
+- Monaco-powered editor with syntax highlighting and AI completion hooks.
+- File explorer with create, rename, delete, and folder management flows.
+- WebContainers runtime for in-browser installs, commands, terminal sessions, and preview.
+- AI chat assistant for project-aware code help.
+- Theme provider with light and dark mode support.
+- Safe planning API contracts for future patch generation and verification workflows.
+- Prisma schema for persisted users, accounts, sessions, playgrounds, and templates.
 
-- 🔐 **OAuth Login with NextAuth** – Supports Google & GitHub login.
-- 🎨 **Modern UI** – Built with TailwindCSS & ShadCN UI.
-- 🌗 **Dark/Light Mode** – Seamlessly toggle between themes.
-- 🧱 **Project Templates** – Choose from React, Next.js, Express, Hono, Vue, or Angular.
-- 🗂️ **Custom File Explorer** – Create, rename, delete, and manage files/folders easily.
-- 🖊️ **Enhanced Monaco Editor** – Syntax highlighting, formatting, keybindings, and AI autocomplete.
-- 💡 **AI Suggestions with Ollama** – Local models give you code completion on `Ctrl + Space` or double `Enter`. Accept with `Tab`.
-- ⚙️ **WebContainers Integration** – Instantly run frontend/backend apps right in the browser.
-- 💻 **Terminal with xterm.js** – Fully interactive embedded terminal experience.
-- 🤖 **AI Chat Assistant** – Share files with the AI and get help, refactors, or explanations.
+## Tech Stack
 
----
+| Layer | Technology |
+| --- | --- |
+| Framework | Next.js App Router |
+| Language | TypeScript |
+| UI | Tailwind CSS, shadcn-style components, Radix UI |
+| Auth | NextAuth |
+| Database | Prisma with MongoDB-compatible connection |
+| Editor | Monaco Editor |
+| Runtime | WebContainers |
+| Terminal | xterm.js |
+| AI | Ollama/local model routes and planning contracts |
 
-## 🧱 Tech Stack
+## Project Structure
 
-| Layer         | Technology                                   |
-|---------------|----------------------------------------------|
-| Framework     | Next.js 15 (App Router)                      |
-| Styling       | TailwindCSS, ShadCN UI                       |
-| Language      | TypeScript                                   |
-| Auth          | NextAuth (Google + GitHub OAuth)             |
-| Editor        | Monaco Editor                                |
-| AI Suggestion | Ollama (LLMs running locally via Docker)     |
-| Runtime       | WebContainers                                |
-| Terminal      | xterm.js                                     |
-| Database      | MongoDB (via DATABASE_URL)                   |
+```text
+app/
+  (auth)/                  Sign-in route group
+  (root)/                  Public home route group
+  api/                     Auth, chat, completion, template, plan, patch, verify routes
+  dashboard/               Authenticated dashboard
+  playground/[id]/         Web IDE route
+components/
+  providers/               App providers
+  ui/                      Shared UI primitives
+docs/                      Architecture, product plan, deployment, contribution docs
+lib/                       DB, templates, AI contracts, verification helpers
+modules/
+  ai-chat/                 AI assistant panel
+  auth/                    Auth actions and components
+  dashboard/               Dashboard actions and UI
+  home/                    Public landing sections
+  playground/              Editor, explorer, dialogs, hooks, utilities
+  webcontainers/           Terminal, preview, WebContainer hooks
+prisma/
+  schema.prisma            Data model
+```
 
----
-
-## 🛠️ Getting Started
-
-### 1. Clone the Repo
+## Getting Started
 
 ```bash
-git clone https://github.com/your-username/vibecode-editor.git
-cd vibecode-editor
-````
-
-### 2. Install Dependencies
-
-```bash
+git clone https://github.com/Rajtiwari0202/ai-code-editor.git
+cd ai-code-editor
 npm install
 ```
 
-### 3. Set Up Environment Variables
-
-Create a `.env.local` file using the template:
+Create `.env.local` from the example:
 
 ```bash
 cp .env.example .env.local
 ```
 
-Then, fill in your credentials:
+Fill in the required values:
 
 ```env
-AUTH_SECRET=your_auth_secret
-AUTH_GOOGLE_ID=your_google_client_id
-AUTH_GOOGLE_SECRET=your_google_secret
-AUTH_GITHUB_ID=your_github_client_id
-AUTH_GITHUB_SECRET=your_github_secret
-DATABASE_URL=your_mongodb_connection_string
+AUTH_SECRET=
+AUTH_GOOGLE_ID=
+AUTH_GOOGLE_SECRET=
+AUTH_GITHUB_ID=
+AUTH_GITHUB_SECRET=
+DATABASE_URL=
 NEXTAUTH_URL=http://localhost:3000
 ```
 
-### 4. Start Local Ollama Model
-
-Make sure [Ollama](https://ollama.com/) and Docker are installed, then run:
-
-```bash
-ollama run codellama
-```
-
-Or use your preferred model that supports code generation.
-
-### 5. Run the Development Server
+Run the app:
 
 ```bash
 npm run dev
 ```
 
-Visit `http://localhost:3000` in your browser.
+Open [http://localhost:3000](http://localhost:3000).
 
+## Local AI Setup
 
----
+The AI completion flow is designed for local model providers such as Ollama.
 
-## 🎯 Keyboard Shortcuts
-
-* `Ctrl + Space` or `Double Enter`: Trigger AI suggestions
-* `Tab`: Accept AI suggestion
-* `/`: Open Command Palette (if implemented)
-
----
-
-
-
----
-
-## 📄 License
-
-This project is licensed under the [MIT License](LICENSE).
-
----
-
-## 🙏 Acknowledgements
-
-* [Monaco Editor](https://microsoft.github.io/monaco-editor/)
-* [Ollama](https://ollama.com/) – for offline LLMs
-* [WebContainers](https://webcontainers.io/)
-* [xterm.js](https://xtermjs.org/)
-* [NextAuth.js](https://next-auth.js.org/)
-
+```bash
+ollama run codellama
 ```
+
+You can swap the model in the API route implementation as the provider layer matures.
+
+## Scripts
+
+```bash
+npm run dev      # Start development server
+npm run lint     # Run ESLint
+npm run build    # Build for production
+npm run start    # Start production server
+```
+
+## Documentation
+
+- [Architecture](./docs/ARCHITECTURE.md)
+- [Product Plan](./docs/PRODUCT_PLAN.md)
+- [Deployment](./docs/DEPLOYMENT.md)
+- [Contributing](./docs/CONTRIBUTING.md)
+
+## Current Status
+
+The project now has a real product foundation: authentication, dashboard, playground editor, WebContainers, terminal, preview, AI chat/completion routes, and planning APIs. The next engineering milestones are hardening the local AI provider layer, improving verification UX, reducing TypeScript lint debt, and preparing deployment secrets and database provisioning.
+
+## Deployment
+
+The Next.js app can deploy to Vercel or another Node-compatible host. WebContainers and OAuth require careful environment setup and browser compatibility checks. See [Deployment](./docs/DEPLOYMENT.md) before publishing.
+
+## License
+
+Add a license file before broad public release.

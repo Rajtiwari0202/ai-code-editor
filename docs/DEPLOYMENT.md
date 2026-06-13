@@ -1,10 +1,8 @@
 # Deployment
 
-Forge Editor has two deployment concerns: the web UI and the future local workspace agent.
+Forge Editor is a Next.js app with authentication, Prisma, WebContainers, and AI endpoints. Deploy it like a standard Next.js application, but prepare the environment carefully.
 
-## Web UI
-
-The current app can be deployed as a standard Next.js project.
+## Preflight
 
 ```bash
 npm install
@@ -12,46 +10,58 @@ npm run lint
 npm run build
 ```
 
-If the build passes, deploy to Vercel or another Node-compatible host.
+Both commands should complete before deployment.
 
-### Vercel
+## Required Environment Variables
 
-1. Push the repository to GitHub.
-2. Import the repository in Vercel.
-3. Use the default Next.js framework settings.
-4. Set environment variables only when real AI providers or backend services are added.
-5. Deploy.
-
-## Environment Variables
-
-No environment variables are required for the current frontend and deterministic API prototype.
-
-Future provider keys should be server-only:
+Create the same values locally in `.env.local` and in the production host:
 
 ```text
-OPENAI_API_KEY=
-ANTHROPIC_API_KEY=
-LOCAL_AGENT_URL=
+AUTH_SECRET=
+AUTH_GOOGLE_ID=
+AUTH_GOOGLE_SECRET=
+AUTH_GITHUB_ID=
+AUTH_GITHUB_SECRET=
+DATABASE_URL=
+NEXTAUTH_URL=
 ```
 
-Do not expose provider keys through `NEXT_PUBLIC_*`.
+Use the production URL for `NEXTAUTH_URL` after deployment.
 
-## Local Agent Deployment
+## Vercel Deployment
 
-The local agent should not be deployed as a normal public web server. It needs access to files and commands on the developer machine, so it should run as:
+1. Push `main` to GitHub.
+2. Import the repository in Vercel.
+3. Select the Next.js framework preset.
+4. Add all required environment variables.
+5. Deploy.
+6. Test sign-in, dashboard loading, playground creation, editor load, terminal boot, preview load, and AI endpoints.
 
-- a local Node service,
-- a desktop companion process,
-- or a CLI-launched background process.
+## Database
 
-The hosted UI should connect to it only after the user grants workspace access.
+The Prisma schema is configured for a MongoDB-compatible datasource through `DATABASE_URL`. Provision the database before first production use and make sure the connection string is not exposed to browser code.
 
-## Preflight Checklist
+## AI Provider
+
+The current app includes local-model/Ollama-oriented routes. Hosted deployment should either:
+
+- connect to a controlled server-side model provider, or
+- document that AI completion requires a local development setup.
+
+Do not expose model provider secrets through `NEXT_PUBLIC_*`.
+
+## WebContainers
+
+WebContainers run in supported browsers and may require cross-origin isolation headers depending on the runtime path. Before launch, verify the deployed playground in the target browsers.
+
+## Release Checklist
 
 - `npm run lint` passes.
 - `npm run build` passes.
-- README and docs match the shipped behavior.
 - Metadata no longer uses generated defaults.
-- No secrets are committed.
-- Future backend endpoints keep privileged operations server-side.
-- `/api/plan`, `/api/patch`, and `/api/verify` return structured data but do not write files, run shell commands, or call external model providers yet.
+- README has no broken asset links.
+- OAuth callback URLs match the deployed domain.
+- Database connectivity works.
+- Playground templates load.
+- WebContainer terminal and preview work in production.
+- AI routes fail gracefully when provider dependencies are unavailable.

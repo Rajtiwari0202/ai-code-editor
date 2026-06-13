@@ -1,126 +1,98 @@
 # Architecture
 
-Forge Editor is organized as a Next.js App Router application with a frontend-first editor workspace. The first production milestone should keep the browser UI separate from any privileged local agent that can read files, write patches, or execute commands.
+Forge Editor is a Next.js App Router web IDE. The repository now contains the full product skeleton: public landing routes, authentication, dashboard, playground editor, Monaco editing, WebContainers execution, terminal output, live preview, AI chat/completion endpoints, and safe planning API contracts.
 
-## Goals
-
-- Provide an editor experience that feels deliberate, fast, and explainable.
-- Keep AI-generated changes traceable to context, intent, patch, and verification.
-- Avoid exposing file-system, shell, or model-provider secrets to browser code.
-- Make local development useful before adding account systems or hosted collaboration.
-
-## Current Implementation
+## High-Level System
 
 ```text
-Browser UI
-  app/page.tsx
-    Route entry
-  components/editor/workspace.tsx
-    Workspace shell
+Browser
+  Public home
+  Auth screens
+  Dashboard
+  Playground IDE
     File explorer
     Monaco editor
-    Open tabs and dirty state
-    Terminal and task panels
-    AI planning panel
-  lib/workspace-model.ts
-    Typed seed data for files, assistant steps, and verification tasks
-  app/api/plan/route.ts
-    Creates structured edit plans
-  app/api/patch/route.ts
-    Creates patch proposal metadata without writing files
-  app/api/verify/route.ts
-    Filters requested commands through the verification allowlist
-  lib/ai/*
-    AI-facing contracts and deterministic planner scaffolding
-  lib/verification/*
-    Verification command allowlist helpers
-  lib/workspace/*
-    Local agent manifest and approval boundary contracts
+    WebContainer terminal
+    Preview iframe
+    AI chat sidebar
 
-Design System
-  app/globals.css
-    Tailwind theme tokens
-  components/ui/*
-    Shared primitives
+Next.js App
+  Route groups
+  Server actions
+  API routes
+  Auth integration
+  Prisma data access
 
-Framework
-  app/layout.tsx
-    Fonts and metadata
+External/Local Services
+  OAuth providers
+  MongoDB-compatible database
+  Ollama or local model provider
+  WebContainers runtime in supported browsers
 ```
 
-The current app has a real client-side editor state model and safe server contracts. It supports opening files, switching tabs, editing buffers, filtering the file tree, saving dirty state, resetting a file to its seed content, generating deterministic plans, creating patch proposal metadata, and filtering verification commands. Workspace persistence, local file access, AI execution, and command execution are still intentionally outside the browser-only surface.
-
-## Recommended Runtime Architecture
+## Main Directories
 
 ```text
-Next.js Web App
-  Renders editor UI
-  Manages client state
-  Sends explicit user actions to API routes or a local agent
+app/
+  (root)/                  Public landing page and layout
+  (auth)/                  Sign-in flow
+  dashboard/               Authenticated project dashboard
+  playground/[id]/         Main IDE experience
+  api/auth/                NextAuth route
+  api/chat/                AI chat endpoint
+  api/code-completion/     Code completion endpoint
+  api/template/            Template fetch endpoint
+  api/plan/                Deterministic plan contract
+  api/patch/               Patch proposal contract
+  api/verify/              Verification allowlist contract
 
-Local Workspace Agent
-  Reads repository files
-  Builds file and symbol indexes
-  Applies patches
-  Runs allowed commands
-  Streams command and model progress
+modules/
+  auth/                    Auth actions, hooks, and user UI
+  dashboard/               Project list, templates, repo add flow
+  playground/              Editor, explorer, dialogs, project hooks
+  webcontainers/           Terminal, preview, runtime bootstrapping
+  ai-chat/                 Assistant sidebar
 
-AI Provider Layer
-  Normalizes model requests
-  Redacts secrets from prompts
-  Stores prompt/response metadata for audit
-  Supports provider swapping
-
-Verification Layer
-  Runs lint, typecheck, tests, and builds
-  Maps results back to files and assistant messages
+lib/
+  db.ts                    Prisma client
+  template.ts              Template helpers
+  ai/                      Planning/patch contracts
+  verification/            Command allowlist helpers
+  workspace/               Local agent capability contract
 ```
 
-## Data Flow
+## Runtime Flow
 
-1. User asks for a change in the assistant panel.
-2. UI sends intent and selected workspace scope to the local agent.
-3. Agent indexes relevant files and returns a proposed plan.
-4. User approves or edits the plan.
-5. Agent requests model output, validates the patch, and applies it.
-6. Verification commands run in a constrained environment.
-7. UI shows diffs, command output, and remaining risk.
+1. A user signs in through NextAuth.
+2. Dashboard actions create or load a playground record.
+3. The playground route loads template/project data.
+4. The file explorer and Monaco editor manipulate the in-memory project tree.
+5. WebContainers boot the project runtime inside the browser.
+6. Terminal and preview panels connect to the WebContainer process.
+7. AI chat/completion endpoints provide coding assistance.
+8. Planning/patch/verify routes provide a safe contract for future reviewable edits.
 
-The current implementation covers steps 1 through 4 with deterministic route handlers. Steps 5 through 7 require the local workspace agent.
+## AI Boundaries
+
+Forge Editor should keep AI actions reviewable:
+
+- Prompt context should be explicit and scoped to selected project files.
+- Patch generation should return proposals before file mutation.
+- Verification commands should pass through an allowlist.
+- Provider keys must stay server-side.
+- Local model usage should be configurable and documented.
 
 ## Security Boundaries
 
-- Browser code must never receive raw API keys.
-- Shell execution should require an allowlist and visible command preview.
-- File writes should be patch-based, reviewable, and scoped to the active workspace.
-- Prompt context should exclude ignored files, secrets, lockfile noise, and generated output unless explicitly requested.
+- Browser code must not receive OAuth secrets, database credentials, or provider keys.
+- WebContainer execution is browser-contained and should not be treated as host shell access.
+- Future host-file access must run through a local agent with user approval.
+- Destructive project actions should keep confirmation dialogs.
+- API routes should validate request payloads before calling provider or database code.
 
-## Suggested Future Modules
+## Current Engineering Debt
 
-```text
-lib/workspace/
-  indexer.ts          File discovery, ignore handling, language summaries
-  selection.ts        Context ranking for a user request
-
-lib/ai/
-  providers.ts        Model provider abstraction
-  prompts.ts          System prompts and task templates
-  patch-parser.ts     Structured patch validation
-
-lib/verification/
-  commands.ts         Allowed commands and runners
-  results.ts          Normalized command output
-
-app/api/
-  plan/route.ts       Plan generation endpoint
-  patch/route.ts      Patch creation endpoint
-  verify/route.ts     Verification endpoint
-```
-
-## Design Principles
-
-- Make reasoning visible.
-- Prefer small patches over broad rewrites.
-- Use existing repository patterns before adding abstractions.
-- Treat verification as part of the feature, not an afterthought.
-- Keep the UI dense and calm; this is a work surface, not a landing page.
+- The remote project contains legacy TypeScript lint debt, mostly `any`, `@ts-ignore`, unused symbols, and optional-chain non-null assertions. ESLint currently reports these as warnings so production builds can pass while debt remains visible.
+- The AI provider layer is not yet fully abstracted.
+- Verification UI is still early; route contracts exist, but command execution is not implemented.
+- Deployment requires real OAuth and database environment variables.
