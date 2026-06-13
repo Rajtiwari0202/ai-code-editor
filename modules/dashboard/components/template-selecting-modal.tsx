@@ -35,7 +35,7 @@ type TemplateSelectionModalProps = {
     title: string;
     template: "REACT" | "NEXTJS" | "EXPRESS" | "VUE" | "HONO" | "ANGULAR";
     description?: string;
-  }) => void;
+  }) => Promise<void> | void;
 };
 
 interface TemplateOption {
@@ -111,9 +111,9 @@ const templates: TemplateOption[] = [
     popularity: 3,
     tags: ["Node.js", "TypeScript", "Backend"],
     features: [
-      "Dependency Injection",
-      "TypeScript Support",
-      "Modular Architecture",
+      "Web Standards",
+      "Small API Surface",
+      "TypeScript-Friendly",
     ],
     category: "backend",
   },
@@ -125,11 +125,10 @@ const templates: TemplateOption[] = [
     icon: "/angular-2.svg",
     color: "#DD0031",
     popularity: 3,
-    tags: ["React", "Fullstack", "JavaScript"],
+    tags: ["Angular", "TypeScript", "Fullstack"],
     features: [
       "Reactive Data Binding",
       "Component System",
-      "Virtual DOM",
       "Dependency Injection",
       "TypeScript Support",
     ],
@@ -147,6 +146,7 @@ const TemplateSelectionModal = ({
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState<TemplateCategory>("all");
   const [projectName, setProjectName] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
   const filteredTemplates = templates.filter((template) => {
     const matchesSearch =
@@ -172,7 +172,15 @@ const TemplateSelectionModal = ({
     }
   };
 
-  const handleCreateProject = () => {
+  const resetModal = () => {
+    setStep("select");
+    setSelectedTemplate(null);
+    setProjectName("");
+    setSearchQuery("");
+    setCategory("all");
+  };
+
+  const handleCreateProject = async () => {
     if (selectedTemplate) {
       const templateMap: Record<
         string,
@@ -187,16 +195,19 @@ const TemplateSelectionModal = ({
       };
 
       const template = templates.find((t) => t.id === selectedTemplate);
-      onSubmit({
-        title:projectName || `New ${template?.name} Project`,
-        template:templateMap[selectedTemplate] || "REACT",
-        description:template?.description
-      })
-      onClose();
-      // Reset state for next time
-      setStep("select");
-      setSelectedTemplate(null);
-      setProjectName("");
+      setIsCreating(true);
+
+      try {
+        await onSubmit({
+          title: projectName.trim() || `New ${template?.name} Project`,
+          template: templateMap[selectedTemplate] || "REACT",
+          description: template?.description,
+        });
+        resetModal();
+        onClose();
+      } finally {
+        setIsCreating(false);
+      }
     }
   };
 
@@ -224,10 +235,7 @@ const TemplateSelectionModal = ({
       onOpenChange={(open) => {
         if (!open) {
           onClose();
-          // Reset state when closing
-          setStep("select");
-          setSelectedTemplate(null);
-          setProjectName("");
+          resetModal();
         }
       }}
     >
@@ -260,7 +268,7 @@ const TemplateSelectionModal = ({
                 </div>
 
                 <Tabs
-                  defaultValue="all"
+                  value={category}
                   className="w-full sm:w-auto"
                   onValueChange={(value) => setCategory(value as TemplateCategory)}
                 >
@@ -388,12 +396,12 @@ const TemplateSelectionModal = ({
                 </span>
               </div>
               <div className="flex gap-3">
-                <Button variant="outline" onClick={onClose}>
+                <Button variant="outline" onClick={onClose} disabled={isCreating}>
                   Cancel
                 </Button>
                 <Button
                   className="bg-[#E93F3F] hover:bg-[#d03636] text-white"
-                  disabled={!selectedTemplate}
+                  disabled={!selectedTemplate || isCreating}
                   onClick={handleContinue}
                 >
                   Continue <ChevronRight size={16} className="ml-1" />
@@ -440,14 +448,15 @@ const TemplateSelectionModal = ({
             </div>
 
             <div className="flex justify-between gap-3 mt-4 pt-4 border-t">
-              <Button variant="outline" onClick={handleBack}>
+              <Button variant="outline" onClick={handleBack} disabled={isCreating}>
                 Back
               </Button>
               <Button
                 className="bg-[#E93F3F] hover:bg-[#d03636] text-white"
+                disabled={isCreating}
                 onClick={handleCreateProject}
               >
-                Create Project
+                {isCreating ? "Creating..." : "Create Project"}
               </Button>
             </div>
           </>

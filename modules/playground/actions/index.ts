@@ -9,9 +9,15 @@ import { currentUser } from "@/modules/auth/actions";
 
 
 export const getPlaygroundById = async(id:string)=>{
+    const user = await currentUser();
+    if (!user?.id) return null;
+
     try {
-        const playground = await db.playground.findUnique({
-            where:{id},
+        const playground = await db.playground.findFirst({
+            where:{
+                id,
+                userId:user.id
+            },
             select:{
                 title:true,
                 templateFiles:{
@@ -23,15 +29,32 @@ export const getPlaygroundById = async(id:string)=>{
         })
         return playground;
     } catch (error) {
-        console.log(error)
+        console.error("Error loading playground:", error)
+        return null
     }
 }
 
 export const SaveUpdatedCode = async(playgroundId:string , data:TemplateFolder)=>{
     const user = await currentUser();
-  if (!user) return null;
+  if (!user?.id) {
+    throw new Error("User Id is Required");
+  }
 
   try {
+    const playground = await db.playground.findFirst({
+        where:{
+            id:playgroundId,
+            userId:user.id
+        },
+        select:{
+            id:true
+        }
+    })
+
+    if (!playground) {
+        throw new Error("Playground not found");
+    }
+
     const updatedPlayground = await db.templateFile.upsert({
         where:{
             playgroundId
@@ -47,7 +70,7 @@ export const SaveUpdatedCode = async(playgroundId:string , data:TemplateFolder)=
 
     return updatedPlayground;
   } catch (error) {
-     console.log("SaveUpdatedCode error:", error);
-    return null;
+     console.error("SaveUpdatedCode error:", error);
+    throw new Error("Failed to save playground files");
   }
 }

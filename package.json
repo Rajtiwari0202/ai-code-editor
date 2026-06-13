@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "validate:env": "node scripts/validate-env.mjs",
+    "validate:templates": "node scripts/validate-templates.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {

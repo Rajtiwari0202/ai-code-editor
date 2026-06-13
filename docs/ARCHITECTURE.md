@@ -90,6 +90,7 @@ Forge Editor should keep AI actions reviewable:
 
 - Browser code must not receive OAuth secrets, database credentials, or provider keys.
 - WebContainer execution is browser-contained and should not be treated as host shell access.
+- Playground reads and mutations are scoped to the authenticated owner before loading templates, saving files, editing metadata, deleting, duplicating, or toggling favorites.
 - Future host-file access must run through a local agent with user approval.
 - Destructive project actions should keep confirmation dialogs.
 - API routes should validate request payloads before calling provider or database code.

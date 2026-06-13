@@ -15,7 +15,7 @@ export const getUserById = async (id:string)=>{
         })
         return user
     } catch (error) {
-         console.log(error)
+        console.error("Error loading user by id:", error)
         return null
     }
 }
@@ -31,7 +31,7 @@ export const getAccountByUserId = async(userId:string)=>{
         return account
         
     } catch (error) {
-         console.log(error)
+        console.error("Error loading account by user id:", error)
         return null
     }
 }

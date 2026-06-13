@@ -13,6 +13,12 @@ Every starter must:
 - avoid checked-in `node_modules`, build output, lock files, and environment files;
 - keep first-run dependencies reasonable for WebContainers.
 
+Run the contract check before changing or deploying templates:
+
+```bash
+npm run validate:templates
+```
+
 ## Included Starters
 
 | Playground template | Directory | Runtime command |

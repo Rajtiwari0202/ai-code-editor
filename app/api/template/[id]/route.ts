@@ -1,4 +1,5 @@
 import { scanTemplateDirectory } from "@/modules/playground/lib/path-to-json";
+import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { templatePaths, type TemplateKey } from "@/lib/template";
 import path from "path";
@@ -24,8 +25,18 @@ export async function GET(
     return Response.json({ error: "Missing playground ID" }, { status: 400 });
   }
 
-  const playground = await db.playground.findUnique({
-    where: { id },
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const playground = await db.playground.findFirst({
+    where: {
+      id,
+      userId,
+    },
     select: {
       template: true,
     },

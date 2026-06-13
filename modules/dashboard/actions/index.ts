@@ -16,22 +16,42 @@ export const toggleStarMarked = async (
   }
 
   try {
+    const playground = await db.playground.findFirst({
+      where: {
+        id: playgroundId,
+        userId,
+      },
+      select: {
+        id: true,
+      },
+    });
+
+    if (!playground) {
+      throw new Error("Playground not found");
+    }
+
     if (isChecked) {
-      await db.starMark.create({
-        data: {
-          userId,
-          playgroundId,
-          isMarked: isChecked,
-        },
-      });
-    } else {
-        await db.starMark.delete({
+      await db.starMark.upsert({
         where: {
           userId_playgroundId: {
             userId,
-            playgroundId: playgroundId,
-
+            playgroundId,
           },
+        },
+        update: {
+          isMarked: true,
+        },
+        create: {
+          userId,
+          playgroundId,
+          isMarked: true,
+        },
+      });
+    } else {
+      await db.starMark.deleteMany({
+        where: {
+          userId,
+          playgroundId,
         },
       });
     }
@@ -72,7 +92,8 @@ export const getAllPlaygroundForUser = async () => {
 
     return playground;
   } catch (error) {
-    console.log(error);
+    console.error("Error loading playgrounds:", error);
+    return [];
   }
 };
 
@@ -102,20 +123,35 @@ export const createPlayground = async (data: {
 
     return playground;
   } catch (error) {
-    console.log(error);
+    console.error("Error creating playground:", error);
+    throw new Error("Failed to create playground");
   }
 };
 
 export const deleteProjectById = async (id: string) => {
+  const user = await currentUser();
+  const userId = user?.id;
+
+  if (!userId) {
+    throw new Error("User Id is Required");
+  }
+
   try {
-    await db.playground.delete({
+    const result = await db.playground.deleteMany({
       where: {
         id,
+        userId,
       },
     });
+
+    if (result.count === 0) {
+      throw new Error("Project not found");
+    }
+
     revalidatePath("/dashboard");
   } catch (error) {
-    console.log(error);
+    console.error("Error deleting project:", error);
+    throw new Error("Failed to delete project");
   }
 };
 
@@ -123,23 +159,47 @@ export const editProjectById = async (
   id: string,
   data: { title: string; description: string }
 ) => {
+  const user = await currentUser();
+  const userId = user?.id;
+
+  if (!userId) {
+    throw new Error("User Id is Required");
+  }
+
   try {
-    await db.playground.update({
+    const result = await db.playground.updateMany({
       where: {
         id,
+        userId,
       },
       data: data,
     });
+
+    if (result.count === 0) {
+      throw new Error("Project not found");
+    }
+
     revalidatePath("/dashboard");
   } catch (error) {
-    console.log(error);
+    console.error("Error editing project:", error);
+    throw new Error("Failed to edit project");
   }
 };
 
 export const duplicateProjectById = async (id: string) => {
+  const user = await currentUser();
+  const userId = user?.id;
+
+  if (!userId) {
+    throw new Error("User Id is Required");
+  }
+
   try {
-    const originalPlayground = await db.playground.findUnique({
-      where: { id },
+    const originalPlayground = await db.playground.findFirst({
+      where: {
+        id,
+        userId,
+      },
       include: {
         templateFiles: {
           select: {
@@ -166,7 +226,7 @@ export const duplicateProjectById = async (id: string) => {
         template: originalPlayground.template,
         user: {
           connect: {
-            id: originalPlayground.userId,
+            id: userId,
           },
         },
         ...(savedTemplateContent !== undefined
@@ -185,5 +245,6 @@ export const duplicateProjectById = async (id: string) => {
     return duplicatedPlayground;
   } catch (error) {
     console.error("Error duplicating project:", error);
+    throw new Error("Failed to duplicate project");
   }
 };

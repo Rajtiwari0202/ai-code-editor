@@ -17,12 +17,14 @@ Status: complete.
 
 Status: in progress.
 
-- Clean dashboard empty, loading, and error states. Started.
+- Clean dashboard empty, loading, and error states. Project creation and mutation failures now surface toasts instead of silent success.
 - Improve playground first-load UX while WebContainers boot. Started.
 - Make AI chat states explicit: idle, thinking, streaming, error.
 - Tighten responsive behavior for dashboard and playground.
 - Replace broken template/image references and add final Open Graph metadata. Template/image references complete.
 - Keep bundled starters runnable through `npm run start`. Complete for React, Next.js, Express, Hono, Vue, and Angular.
+- Add a template validation command. Complete.
+- Scope playground mutations to the authenticated owner. Complete.
 
 ## Phase 3: AI Layer Hardening
 

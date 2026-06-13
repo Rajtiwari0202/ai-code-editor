@@ -7,6 +7,7 @@ Forge Editor is a Next.js app with authentication, Prisma, WebContainers, and AI
 ```bash
 npm install
 npm run validate:env
+npm run validate:templates
 npm run lint
 npm run build
 npm run start
@@ -64,6 +65,7 @@ WebContainers run in supported browsers and may require cross-origin isolation h
 - `npm run lint` passes.
 - `npm run build` passes.
 - `npm run validate:env` passes in the target environment.
+- `npm run validate:templates` passes.
 - Metadata no longer uses generated defaults.
 - README has no broken asset links.
 - OAuth callback URLs match the deployed domain.

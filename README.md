@@ -115,6 +115,7 @@ npm run lint     # Run ESLint
 npm run build    # Build for production
 npm run start    # Start production server
 npm run validate:env  # Check required deployment environment variables
+npm run validate:templates  # Check bundled starter template contract
 ```
 
 ## Documentation

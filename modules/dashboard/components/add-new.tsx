@@ -2,7 +2,6 @@
 "use client";
 
 import { Button } from "@/components/ui/button"
-// import { createPlayground } from "@/features/playground/actions";
 import { Plus } from 'lucide-react'
 import Image from "next/image"
 import { useRouter } from "next/navigation";
@@ -21,12 +20,20 @@ const AddNewButton = () => {
     template: "REACT" | "NEXTJS" | "EXPRESS" | "VUE" | "HONO" | "ANGULAR";
     description?: string;
   })=>{
-    const res = await createPlayground(data);
-    toast.success("Playground Created successfully"
-      
-    )
-    setIsModalOpen(false)
-    router.push(`/playground/${res?.id}`)
+    try {
+      const res = await createPlayground(data);
+
+      if (!res?.id) {
+        throw new Error("Playground was not created");
+      }
+
+      toast.success("Playground created successfully");
+      router.push(`/playground/${res.id}`);
+    } catch (error) {
+      console.error("Failed to create playground:", error);
+      toast.error("Failed to create playground");
+      throw error;
+    }
   }
 
 
