@@ -54,6 +54,8 @@ modules/
   webcontainers/           Terminal, preview, WebContainer hooks
 prisma/
   schema.prisma            Data model
+templates/
+  forge-starters/          Runnable starter projects loaded by the playground
 ```
 
 ## Getting Started
@@ -83,6 +85,8 @@ NEXTAUTH_URL=http://localhost:3000
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=codellama:latest
 ```
+
+`OLLAMA_BASE_URL` and `OLLAMA_MODEL` are optional for basic app boot because the API routes have defaults. Configure them when you want local AI chat and completion to call a specific Ollama host/model.
 
 Run the app:
 
@@ -118,11 +122,12 @@ npm run validate:env  # Check required deployment environment variables
 - [Architecture](./docs/ARCHITECTURE.md)
 - [Product Plan](./docs/PRODUCT_PLAN.md)
 - [Deployment](./docs/DEPLOYMENT.md)
+- [Templates](./docs/TEMPLATES.md)
 - [Contributing](./docs/CONTRIBUTING.md)
 
 ## Current Status
 
-The project now has a real product foundation: authentication, dashboard, playground editor, WebContainers, terminal, preview, AI chat/completion routes, and planning APIs. The next engineering milestones are hardening the local AI provider layer, improving verification UX, reducing TypeScript lint debt, and preparing deployment secrets and database provisioning.
+The project now has a real product foundation: authentication, dashboard, playground editor, persisted template files, bundled starter projects, WebContainers, terminal, preview, AI chat/completion routes, and planning APIs. Lint, production build, and environment validation are part of the release preflight. The remaining launch work is operational: provision MongoDB, configure OAuth callbacks, choose the production AI provider posture, and verify WebContainers in the deployed browser environment.
 
 ## Deployment
 
@@ -130,4 +135,4 @@ The Next.js app can deploy to Vercel or another Node-compatible host. WebContain
 
 ## License
 
-Add a license file before broad public release.
+No open-source license has been selected yet. Choose and add a license file before broad public redistribution.

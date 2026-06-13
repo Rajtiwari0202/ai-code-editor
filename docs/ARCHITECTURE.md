@@ -55,17 +55,20 @@ modules/
 
 lib/
   db.ts                    Prisma client
-  template.ts              Template helpers
+  template.ts              Starter template path registry
   ai/                      Planning/patch contracts and Ollama client
   verification/            Command allowlist helpers
   workspace/               Local agent capability contract
+
+templates/
+  forge-starters/          React, Next.js, Express, Hono, Vue, and Angular starters
 ```
 
 ## Runtime Flow
 
 1. A user signs in through NextAuth.
 2. Dashboard actions create or load a playground record.
-3. The playground route loads template/project data.
+3. The playground route loads saved template data or scans a starter from `templates/forge-starters`.
 4. The file explorer and Monaco editor manipulate the in-memory project tree.
 5. WebContainers boot the project runtime inside the browser.
 6. Terminal and preview panels connect to the WebContainer process.
@@ -93,7 +96,7 @@ Forge Editor should keep AI actions reviewable:
 
 ## Current Engineering Debt
 
-- The remote project contains legacy TypeScript lint debt, mostly `any`, `@ts-ignore`, unused symbols, and optional-chain non-null assertions. ESLint currently reports these as warnings so production builds can pass while debt remains visible.
 - The AI provider layer has a first shared Ollama client, but hosted-provider adapters and richer model selection are still pending.
 - Verification UI is still early; route contracts exist, but command execution is not implemented.
-- Deployment requires real OAuth and database environment variables.
+- Deployment requires real OAuth and database environment variables in the target host.
+- The patch workflow is still proposal-first; applying diffs from AI plans remains future work.

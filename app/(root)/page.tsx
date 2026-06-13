@@ -47,7 +47,7 @@ export default function Home() {
     <div className="min-h-screen bg-background text-foreground">
       <section className="relative isolate overflow-hidden border-b">
         <Image
-          src="/vibe-code-editor-thumbnail.svg"
+          src="/forge-editor-thumbnail.svg"
           alt="Forge Editor workspace preview"
           fill
           priority

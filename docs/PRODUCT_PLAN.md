@@ -4,7 +4,7 @@ This plan tracks the path from the current full-stack web IDE foundation to a de
 
 ## Phase 1: Stabilize The Existing Product
 
-Status: in progress.
+Status: complete.
 
 - Merge local work with the real GitHub project history. Complete.
 - Preserve the full remote app: auth, dashboard, playground, WebContainers, AI chat, and Prisma. Complete.
@@ -15,11 +15,14 @@ Status: in progress.
 
 ## Phase 2: Product Polish
 
-- Clean dashboard empty, loading, and error states.
-- Improve playground first-load UX while WebContainers boot.
+Status: in progress.
+
+- Clean dashboard empty, loading, and error states. Started.
+- Improve playground first-load UX while WebContainers boot. Started.
 - Make AI chat states explicit: idle, thinking, streaming, error.
 - Tighten responsive behavior for dashboard and playground.
-- Replace any broken image references and add final Open Graph metadata.
+- Replace broken template/image references and add final Open Graph metadata. Template/image references complete.
+- Keep bundled starters runnable through `npm run start`. Complete for React, Next.js, Express, Hono, Vue, and Angular.
 
 ## Phase 3: AI Layer Hardening
 
@@ -40,13 +43,17 @@ Status: in progress.
 
 ## Phase 5: Deployment
 
+Status: deployment-ready locally; external services still need provisioning.
+
 - Provision database.
 - Configure OAuth providers.
 - Configure model provider or local-model instructions.
 - Add environment validation command. Complete.
+- Add release checklist and deployment docs. Complete.
+- Verify local production build and static public routes. Complete.
 - Verify WebContainer browser requirements in production.
 - Deploy to Vercel or another Node-compatible host.
-- Add release checklist and screenshots.
+- Add production screenshots after the hosted URL is live.
 
 ## Definition Of Done
 

@@ -3,6 +3,7 @@
 import { db } from "@/lib/db";
 import { currentUser } from "@/modules/auth/actions";
 import { revalidatePath } from "next/cache";
+import type { Prisma } from "@prisma/client";
 
 export const toggleStarMarked = async (
   playgroundId: string,
@@ -139,20 +140,44 @@ export const duplicateProjectById = async (id: string) => {
   try {
     const originalPlayground = await db.playground.findUnique({
       where: { id },
-      // todo: add tempalte files
+      include: {
+        templateFiles: {
+          select: {
+            content: true,
+          },
+        },
+      },
     });
+
     if (!originalPlayground) {
       throw new Error("Original playground not found");
     }
+
+    const savedTemplate = originalPlayground.templateFiles[0];
+    const savedTemplateContent =
+      savedTemplate?.content === undefined || savedTemplate.content === null
+        ? undefined
+        : (savedTemplate.content as Prisma.InputJsonValue);
 
     const duplicatedPlayground = await db.playground.create({
       data: {
         title: `${originalPlayground.title} (Copy)`,
         description: originalPlayground.description,
         template: originalPlayground.template,
-        userId: originalPlayground.userId,
-
-        // todo: add template files
+        user: {
+          connect: {
+            id: originalPlayground.userId,
+          },
+        },
+        ...(savedTemplateContent !== undefined
+          ? {
+              templateFiles: {
+                create: {
+                  content: savedTemplateContent,
+                },
+              },
+            }
+          : {}),
       },
     });
 

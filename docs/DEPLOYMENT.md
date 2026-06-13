@@ -9,9 +9,10 @@ npm install
 npm run validate:env
 npm run lint
 npm run build
+npm run start
 ```
 
-Both commands should complete before deployment.
+The validation, lint, build, and production smoke command should complete before deployment. Stop the local production server after the smoke test.
 
 ## Required Environment Variables
 
@@ -30,6 +31,7 @@ OLLAMA_MODEL=
 ```
 
 Use the production URL for `NEXTAUTH_URL` after deployment.
+`OLLAMA_BASE_URL` and `OLLAMA_MODEL` have defaults in code, but production AI behavior should be configured deliberately instead of relying on localhost from a hosted environment.
 
 ## Vercel Deployment
 
@@ -67,5 +69,6 @@ WebContainers run in supported browsers and may require cross-origin isolation h
 - OAuth callback URLs match the deployed domain.
 - Database connectivity works.
 - Playground templates load.
+- Each starter has a `package.json` with `npm run start`.
 - WebContainer terminal and preview work in production.
 - AI routes fail gracefully when provider dependencies are unavailable.
