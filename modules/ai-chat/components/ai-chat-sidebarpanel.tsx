@@ -1,252 +1,306 @@
 "use client";
 
-import type React from "react";
-import { useState, useEffect, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-
-import {
-    Loader2,
-    Send,
-    User,
-    Copy,
-
-    X,
-
-    Code,
-    Sparkles,
-    MessageSquare,
-    RefreshCw,
-
-    Settings,
-    Zap,
-    Brain,
-
-    Search,
-    Filter,
-    Download,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
+import type { FormEvent, KeyboardEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import Image from "next/image";
 import ReactMarkdown from "react-markdown";
+import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
-import rehypeKatex from "rehype-katex";
+import { toast } from "sonner";
 import {
-    TooltipProvider,
-} from "@/components/ui/tooltip";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
+  AlertCircle,
+  Brain,
+  Code,
+  Copy,
+  Download,
+  Filter,
+  Loader2,
+  MessageSquare,
+  RefreshCw,
+  Search,
+  Send,
+  Trash2,
+  User,
+  X,
+  Zap,
+} from "lucide-react";
+
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-    DropdownMenuCheckboxItem,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+
 import "katex/dist/katex.min.css";
-import Image from "next/image";
 
 type ChatMode = "chat" | "review" | "fix" | "optimize";
+type MessageType =
+  | "chat"
+  | "code_review"
+  | "error_fix"
+  | "optimization";
+
 type ChatResponse = {
-    response?: string;
-    tokens?: number;
-    model?: string;
+  response?: string;
+  tokens?: number;
+  model?: string;
+  provider?: string;
+  error?: string;
+  details?: string;
 };
 
-const chatModes: ChatMode[] = ["chat", "review", "fix", "optimize"];
-
-const isChatMode = (value: string): value is ChatMode =>
-    chatModes.includes(value as ChatMode);
-
 interface ChatMessage {
-    role: "user" | "assistant";
-    content: string;
-    id: string;
-    timestamp: Date;
-    type?: "chat" | "code_review" | "suggestion" | "error_fix" | "optimization";
-    tokens?: number;
-    model?: string;
+  role: "user" | "assistant";
+  content: string;
+  id: string;
+  timestamp: Date;
+  type: MessageType;
+  tokens?: number;
+  model?: string;
+  provider?: string;
 }
 
 interface AIChatSidePanelProps {
-    isOpen: boolean;
-    onClose: () => void;
-
+  isOpen: boolean;
+  onClose: () => void;
 }
 
-const MessageTypeIndicator: React.FC<{
-    type?: string;
-    model?: string;
-    tokens?: number;
-}> = ({ type, model, tokens }) => {
-    const getTypeConfig = (type?: string) => {
-        switch (type) {
-            case "code_review":
-                return { icon: Code, color: "text-blue-400", label: "Code Review" };
-            case "suggestion":
-                return {
-                    icon: Sparkles,
-                    color: "text-purple-400",
-                    label: "Suggestion",
-                };
-            case "error_fix":
-                return { icon: RefreshCw, color: "text-red-400", label: "Error Fix" };
-            case "optimization":
-                return { icon: Zap, color: "text-yellow-400", label: "Optimization" };
-            default:
-                return { icon: MessageSquare, color: "text-zinc-400", label: "Chat" };
-        }
-    };
-
-    const config = getTypeConfig(type);
-    const Icon = config.icon;
-
-    return (
-        <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-1">
-                <Icon className={cn("h-3 w-3", config.color)} />
-                <span className={cn("text-xs font-medium", config.color)}>
-                    {config.label}
-                </span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-zinc-500">
-                {model && <span>{model}</span>}
-                {tokens && <span>{tokens} tokens</span>}
-            </div>
-        </div>
-    );
+const chatModes: Record<
+  ChatMode,
+  {
+    label: string;
+    icon: typeof MessageSquare;
+    messageType: MessageType;
+    description: string;
+    loadingText: string;
+    prompt: (content: string) => string;
+    suggestions: string[];
+  }
+> = {
+  chat: {
+    label: "Chat",
+    icon: MessageSquare,
+    messageType: "chat",
+    description: "Ask questions about the codebase or current implementation.",
+    loadingText: "Thinking through your request...",
+    prompt: (content) => content,
+    suggestions: [
+      "Explain this component in plain English",
+      "Suggest a cleaner folder structure",
+      "Find edge cases I should handle",
+      "Write a short implementation plan",
+    ],
+  },
+  review: {
+    label: "Review",
+    icon: Code,
+    messageType: "code_review",
+    description: "Focus on bugs, regressions, maintainability, and tests.",
+    loadingText: "Reviewing the code path and likely risks...",
+    prompt: (content) =>
+      `Review this code or implementation idea. Prioritize bugs, security, maintainability, and missing tests.\n\n${content}`,
+    suggestions: [
+      "Review this API route for production risks",
+      "Check this React hook for stale state issues",
+      "Audit this save flow for data loss",
+      "Find missing validation in this handler",
+    ],
+  },
+  fix: {
+    label: "Fix",
+    icon: RefreshCw,
+    messageType: "error_fix",
+    description: "Describe an error and get a practical repair path.",
+    loadingText: "Tracing the issue and preparing a fix...",
+    prompt: (content) =>
+      `Help fix this issue. Explain the likely cause, then give concrete changes.\n\n${content}`,
+    suggestions: [
+      "Fix this TypeScript error",
+      "Debug why this request returns 500",
+      "Explain why this state does not update",
+      "Resolve this build failure",
+    ],
+  },
+  optimize: {
+    label: "Optimize",
+    icon: Zap,
+    messageType: "optimization",
+    description: "Improve performance, clarity, or bundle/runtime behavior.",
+    loadingText: "Looking for practical optimizations...",
+    prompt: (content) =>
+      `Analyze this code for useful optimizations. Keep recommendations grounded and explain tradeoffs.\n\n${content}`,
+    suggestions: [
+      "Optimize this component render path",
+      "Reduce repeated network work here",
+      "Make this database query cheaper",
+      "Improve this WebContainer startup flow",
+    ],
+  },
 };
 
-export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
-    isOpen,
-    onClose,
+const filterOptions: { value: "all" | MessageType; label: string }[] = [
+  { value: "all", label: "All messages" },
+  { value: "chat", label: "Chat" },
+  { value: "code_review", label: "Reviews" },
+  { value: "error_fix", label: "Fixes" },
+  { value: "optimization", label: "Optimizations" },
+];
 
-}) => {
-    const [messages, setMessages] = useState<ChatMessage[]>([]);
-    const [input, setInput] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
-    const [chatMode, setChatMode] = useState<ChatMode>("chat");
-    const [searchTerm, setSearchTerm] = useState("");
-    const [filterType, setFilterType] = useState<string>("all");
-    const [autoSave, setAutoSave] = useState(true);
-    const [streamResponse, setStreamResponse] = useState(true);
-    const [model, setModel] = useState<string>("gpt-6");
+function createId() {
+  return globalThis.crypto?.randomUUID?.() ?? `${Date.now()}-${Math.random()}`;
+}
 
-    const messagesEndRef = useRef<HTMLDivElement>(null);
+async function readErrorMessage(response: Response) {
+  try {
+    const data = (await response.json()) as ChatResponse;
+    if (data.details) {
+      return `${data.error || "AI request failed"}: ${data.details}`;
+    }
+    return data.error || `AI request failed with status ${response.status}`;
+  } catch {
+    return `AI request failed with status ${response.status}`;
+  }
+}
 
-    const scrollToBottom = () => {
-        if (messagesEndRef.current) {
-            messagesEndRef.current.scrollIntoView({ behavior: "smooth" });
-        }
-    };
+function MessageTypeIndicator({ message }: { message: ChatMessage }) {
+  const config =
+    Object.values(chatModes).find(
+      (mode) => mode.messageType === message.type
+    ) || chatModes.chat;
+  const Icon = config.icon;
+  const modelLabel = [message.provider, message.model].filter(Boolean).join(" ");
 
-    useEffect(() => {
-        const timeoutId = setTimeout(() => {
-            scrollToBottom();
-        }, 100);
-        return () => clearTimeout(timeoutId);
-    }, [messages, isLoading]);
+  return (
+    <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+      <div className="flex items-center gap-2 text-xs font-medium text-zinc-300">
+        <Icon className="h-3.5 w-3.5 text-zinc-400" />
+        <span>{config.label}</span>
+      </div>
+      {(modelLabel || message.tokens) && (
+        <div className="flex items-center gap-2 text-xs text-zinc-500">
+          {modelLabel && <span>{modelLabel}</span>}
+          {message.tokens ? <span>{message.tokens} tokens</span> : null}
+        </div>
+      )}
+    </div>
+  );
+}
 
-    const getChatModePrompt = (mode: ChatMode, content: string) => {
-        switch (mode) {
-            case "review":
-                return `Please review this code and provide detailed suggestions for improvement, including performance, security, and best practices:\n\n**Request:** ${content}`;
-            case "fix":
-                return `Please help fix issues in this code, including bugs, errors, and potential problems:\n\n**Problem:** ${content}`;
-            case "optimize":
-                return `Please analyze this code for performance optimizations and suggest improvements:\n\n**Code to optimize:** ${content}`;
-            default:
-                return content
-        }
-    };
+export function AIChatSidePanel({ isOpen, onClose }: AIChatSidePanelProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [chatMode, setChatMode] = useState<ChatMode>("chat");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<"all" | MessageType>("all");
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-   const sendCurrentMessage = async () => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const activeMode = chatModes[chatMode];
+
+  const filteredMessages = useMemo(() => {
+    const normalizedSearch = searchTerm.trim().toLowerCase();
+
+    return messages.filter((message) => {
+      const matchesType =
+        filterType === "all" || message.type === filterType;
+      const matchesSearch =
+        !normalizedSearch ||
+        message.content.toLowerCase().includes(normalizedSearch);
+
+      return matchesType && matchesSearch;
+    });
+  }, [filterType, messages, searchTerm]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchTerm("");
+      setErrorMessage(null);
+    }
+  }, [isOpen]);
+
+  const sendCurrentMessage = async () => {
     const trimmedInput = input.trim();
-
     if (!trimmedInput || isLoading) return;
 
-    const messageType =
-      chatMode === "chat"
-        ? "chat"
-        : chatMode === "review"
-        ? "code_review"
-        : chatMode === "fix"
-        ? "error_fix"
-        : "optimization";
-
-    const newMessage: ChatMessage = {
+    const userMessage: ChatMessage = {
       role: "user",
       content: trimmedInput,
       timestamp: new Date(),
-      id: Date.now().toString(),
-      type: messageType,
+      id: createId(),
+      type: activeMode.messageType,
     };
 
-    setMessages((prev) => [...prev, newMessage]);
+    setMessages((current) => [...current, userMessage]);
     setInput("");
     setIsLoading(true);
+    setErrorMessage(null);
 
     try {
-      const contextualMessage = getChatModePrompt(chatMode, trimmedInput);
-
       const response = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          message: contextualMessage,
-          history: messages.slice(-10).map((msg) => ({
-            role: msg.role,
-            content: msg.content,
+          message: activeMode.prompt(trimmedInput),
+          history: messages.slice(-10).map((message) => ({
+            role: message.role,
+            content: message.content,
           })),
-          stream: streamResponse,
-          mode: chatMode,
-          model,
         }),
       });
 
-      if (response.ok) {
-        const data = (await response.json()) as ChatResponse;
-
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content:
-              data.response ||
-              "I processed the request, but no response text was returned.",
-            timestamp: new Date(),
-            id: Date.now().toString(),
-            type: messageType,
-            tokens: data.tokens,
-            model: data.model || "AI Assistant",
-          },
-        ]);
-      } else {
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content:
-              "Sorry, I encountered an error while processing your request. Please try again.",
-            timestamp: new Date(),
-            id: Date.now().toString(),
-          },
-        ]);
+      if (!response.ok) {
+        throw new Error(await readErrorMessage(response));
       }
-    } catch (error) {
-      console.error("Error sending message:", error);
-      setMessages((prev) => [
-        ...prev,
+
+      const data = (await response.json()) as ChatResponse;
+
+      setMessages((current) => [
+        ...current,
         {
           role: "assistant",
           content:
-            "I'm having trouble connecting right now. Please check your internet connection and try again.",
+            data.response ||
+            "The AI provider returned successfully, but no response text was included.",
           timestamp: new Date(),
-          id: Date.now().toString(),
+          id: createId(),
+          type: activeMode.messageType,
+          tokens: data.tokens,
+          model: data.model,
+          provider: data.provider,
+        },
+      ]);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "The AI provider could not be reached.";
+
+      setErrorMessage(message);
+      setMessages((current) => [
+        ...current,
+        {
+          role: "assistant",
+          content:
+            "I could not reach the configured AI provider. Check the server logs and verify the Ollama service is running.",
+          timestamp: new Date(),
+          id: createId(),
+          type: activeMode.messageType,
+          provider: "Ollama",
         },
       ]);
     } finally {
@@ -254,422 +308,397 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
     }
   };
 
-    const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        void sendCurrentMessage();
-    };
+  const handleSendMessage = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    void sendCurrentMessage();
+  };
 
-    const exportChat = () => {
-         const chatData = {
+  const handleInputKeyDown = (event: KeyboardEvent<HTMLTextAreaElement>) => {
+    if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+      event.preventDefault();
+      void sendCurrentMessage();
+    }
+  };
+
+  const copyMessage = async (content: string) => {
+    await navigator.clipboard.writeText(content);
+    toast.success("Message copied");
+  };
+
+  const exportChat = () => {
+    const chatData = {
       messages,
-      timestamp: new Date().toISOString(),
+      exportedAt: new Date().toISOString(),
     };
     const blob = new Blob([JSON.stringify(chatData, null, 2)], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ai-chat-${new Date().toISOString().split("T")[0]}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = `forge-chat-${new Date().toISOString().split("T")[0]}.json`;
+    document.body.appendChild(anchor);
+    anchor.click();
+    document.body.removeChild(anchor);
     URL.revokeObjectURL(url);
-    };
+  };
 
-    const filteredMessages = messages
-        .filter((msg) => {
-            if (filterType === "all") return true;
-            return msg.type === filterType
-        })
-        .filter((msg) => {
-            if (!searchTerm) return true;
-            return msg.content.toLowerCase().includes(searchTerm.toLowerCase())
-        })
+  return (
+    <>
+      <div
+        className={cn(
+          "fixed inset-0 z-40 bg-black/50 backdrop-blur-sm transition-opacity duration-300",
+          isOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        )}
+        onClick={onClose}
+      />
 
-    return (
-        <TooltipProvider>
-            <>
-                {/* Backdrop */}
-                <div
-                    className={cn(
-                        "fixed inset-0 bg-black/50 backdrop-blur-sm z-40 transition-opacity duration-300",
-                        isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-                    )}
-                    onClick={onClose}
-                />
-
-                {/* Side Panel */}
-                <div
-                    className={cn(
-                        "fixed right-0 top-0 h-full w-full max-w-6xl bg-zinc-950 border-l border-zinc-800 z-50 flex flex-col transition-transform duration-300 ease-out shadow-2xl",
-                        isOpen ? "translate-x-0" : "translate-x-full"
-                    )}
-                >
-                    {/* Enhanced Header */}
-                    <div className="shrink-0 border-b border-zinc-800 bg-zinc-900/80 backdrop-blur-sm">
-                        <div className="flex items-center justify-between p-6">
-                            <div className="flex items-center gap-3">
-                                <div className="relative w-10 h-10 border rounded-full flex flex-col justify-center items-center">
-                                    <Image src={"/logo.svg"} alt="Logo" width={28} height={28} />
-                                </div>
-                                <div>
-                                    <h2 className="text-lg font-semibold text-zinc-100">
-                                        Enhanced AI Assistant
-                                    </h2>
-                                    <p className="text-sm text-zinc-400">
-                                        {messages.length} messages
-                                    </p>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                        <Button
-                                            variant="ghost"
-                                            size="sm"
-                                            className="text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
-                                        >
-                                            <Settings className="h-4 w-4" />
-                                        </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                        <DropdownMenuCheckboxItem
-                                            checked={autoSave}
-                                            onCheckedChange={setAutoSave}
-                                        >
-                                            Auto-save conversations
-                                        </DropdownMenuCheckboxItem>
-                                        <DropdownMenuCheckboxItem
-                                            checked={streamResponse}
-                                            onCheckedChange={setStreamResponse}
-                                        >
-                                            Stream responses
-                                        </DropdownMenuCheckboxItem>
-                                        <DropdownMenuSeparator />
-                                        <DropdownMenuItem onClick={exportChat}>
-                                            <Download className="h-4 w-4 mr-2" />
-                                            Export Chat
-                                        </DropdownMenuItem>
-                                        <DropdownMenuItem onClick={() => setMessages([])}>
-                                            Clear All Messages
-                                        </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                </DropdownMenu>
-
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={onClose}
-                                    className="h-8 w-8 p-0 text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
-                                >
-                                    <X className="h-4 w-4" />
-                                </Button>
-                            </div>
-                        </div>
-
-                        {/* Enhanced Controls */}
-                        <Tabs
-                            value={chatMode}
-                            onValueChange={(value) => {
-                                if (isChatMode(value)) {
-                                    setChatMode(value);
-                                }
-                            }}
-                            className="px-6"
-                        >
-                            <div className="flex items-center justify-between mb-4">
-                                <TabsList className="grid w-full grid-cols-4 max-w-md">
-                                    <TabsTrigger value="chat" className="flex items-center gap-1">
-                                        <MessageSquare className="h-3 w-3" />
-                                        Chat
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="review"
-                                        className="flex items-center gap-1"
-                                    >
-                                        <Code className="h-3 w-3" />
-                                        Review
-                                    </TabsTrigger>
-                                    <TabsTrigger value="fix" className="flex items-center gap-1">
-                                        <RefreshCw className="h-3 w-3" />
-                                        Fix
-                                    </TabsTrigger>
-                                    <TabsTrigger
-                                        value="optimize"
-                                        className="flex items-center gap-1"
-                                    >
-                                        <Zap className="h-3 w-3" />
-                                        Optimize
-                                    </TabsTrigger>
-                                </TabsList>
-
-                                <div className="flex items-center gap-2">
-                                    <div className="hidden sm:flex items-center gap-2 text-xs text-zinc-400">
-                                        <span className="text-zinc-500">Model:</span>
-                                        <select
-                                            value={model}
-                                            onChange={(e) => setModel(e.target.value)}
-                                            className="bg-zinc-900/60 border border-zinc-800 rounded px-2 py-1 text-zinc-200 focus:outline-none"
-                                        >
-                                            <option value="gpt-6">gpt-6</option>
-                                            <option value="codellama">codellama</option>
-                                            <option value="llama2">llama2</option>
-                                        </select>
-                                    </div>
-                                    <div className="relative">
-                                        <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-3 w-3 text-zinc-500" />
-                                        <Input
-                                            placeholder="Search messages..."
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            className="pl-7 h-8 w-40 bg-zinc-800/50 border-zinc-700/50"
-                                        />
-                                    </div>
-
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                <Filter className="h-3 w-3" />
-                                            </Button>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent align="end">
-                                            <DropdownMenuItem onClick={() => setFilterType("all")}>
-                                                All Messages
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem onClick={() => setFilterType("chat")}>
-                                                Chat Only
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() => setFilterType("code_review")}
-                                            >
-                                                Code Reviews
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() => setFilterType("error_fix")}
-                                            >
-                                                Error Fixes
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                onClick={() => setFilterType("optimization")}
-                                            >
-                                                Optimizations
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                            </div>
-                        </Tabs>
-                    </div>
-
-                    {/* Messages Container */}
-                    <div className="flex-1 overflow-y-auto bg-zinc-950">
-                        <div className="p-6 space-y-6">
-                            {filteredMessages.length === 0 && !isLoading && (
-                                <div className="text-center text-zinc-500 py-16">
-                                    <div className="relative w-16 h-16 border rounded-full flex flex-col justify-center items-center mx-auto mb-4">
-                                        <Brain className="h-8 w-8 text-zinc-400" />
-                                    </div>
-                                    <h3 className="text-xl font-semibold mb-3 text-zinc-300">
-                                        Enhanced AI Assistant
-                                    </h3>
-                                    <p className="text-zinc-400 max-w-md mx-auto leading-relaxed mb-6">
-                                        Advanced AI coding assistant with comprehensive analysis
-                                        capabilities.
-                                    </p>
-                                    <div className="grid grid-cols-2 gap-2 max-w-lg mx-auto">
-                                        {[
-                                            "Review my React component for performance",
-                                            "Fix TypeScript compilation errors",
-                                            "Optimize database query performance",
-                                            "Add comprehensive error handling",
-                                            "Implement security best practices",
-                                            "Refactor code for better maintainability",
-                                        ].map((suggestion) => (
-                                            <button
-                                                key={suggestion}
-                                                onClick={() => setInput(suggestion)}
-                                                className="px-3 py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-sm text-zinc-300 transition-colors text-left"
-                                            >
-                                                {suggestion}
-                                            </button>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {filteredMessages.map((msg) => (
-                                <div key={msg.id} className="space-y-4">
-                                    <div
-                                        className={cn(
-                                            "flex items-start gap-4 group",
-                                            msg.role === "user" ? "justify-end" : "justify-start"
-                                        )}
-                                    >
-                                        {msg.role === "assistant" && (
-                                            <div className="relative w-10 h-10 border rounded-full flex flex-col justify-center items-center">
-                                                <Brain className="h-5 w-5 text-zinc-400" />
-                                            </div>
-                                        )}
-
-                                        <div
-                                            className={cn(
-                                                "max-w-[85%] rounded-xl shadow-sm",
-                                                msg.role === "user"
-                                                    ? "bg-zinc-900/70 text-white p-4 rounded-br-md"
-                                                    : "bg-zinc-900/80 backdrop-blur-sm text-zinc-100 p-5 rounded-bl-md border border-zinc-800/50"
-                                            )}
-                                        >
-                                            {msg.role === "assistant" && (
-                                                <MessageTypeIndicator
-                                                    type={msg.type}
-                                                    model={msg.model}
-                                                    tokens={msg.tokens}
-                                                />
-                                            )}
-
-                                            <div className="prose prose-invert prose-sm max-w-none">
-                                                <ReactMarkdown
-                                                    remarkPlugins={[remarkGfm, remarkMath]}
-                                                    rehypePlugins={[rehypeKatex]}
-                                                    components={{
-                                                        code: ({ children, className }) => {
-                                                            const isBlockCode = className?.startsWith("language-");
-
-                                                            if (!isBlockCode) {
-                                                                return (
-                                                                    <code className="bg-zinc-800 px-1 py-0.5 rounded text-sm">
-                                                                        {children}
-                                                                    </code>
-                                                                );
-                                                            }
-                                                            return (
-                                                                <div className="bg-zinc-800 rounded-lg p-4 my-4">
-                                                                    <pre className="text-sm text-zinc-100 overflow-x-auto">
-                                                                        <code className={className}>{children}</code>
-                                                                    </pre>
-                                                                </div>
-                                                            );
-                                                        },
-                                                    }}
-                                                >
-                                                    {msg.content}
-                                                </ReactMarkdown>
-                                            </div>
-
-                                            {/* Message actions */}
-                                            <div className="flex items-center justify-between mt-3 pt-2 border-t border-zinc-700/30">
-                                                <div className="text-xs text-zinc-500">
-                                                    {msg.timestamp.toLocaleTimeString()}
-                                                </div>
-                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            navigator.clipboard.writeText(msg.content)
-                                                        }
-                                                        className="h-6 w-6 p-0 text-zinc-400 hover:text-zinc-200"
-                                                    >
-                                                        <Copy className="h-3 w-3" />
-                                                    </Button>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => setInput(msg.content)}
-                                                        className="h-6 w-6 p-0 text-zinc-400 hover:text-zinc-200"
-                                                    >
-                                                        <RefreshCw className="h-3 w-3" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {msg.role === "user" && (
-                                            <Avatar className="h-9 w-9 border border-zinc-700 bg-zinc-800 shrink-0">
-                                                <AvatarFallback className="bg-zinc-700 text-zinc-300">
-                                                    <User className="h-5 w-5" />
-                                                </AvatarFallback>
-                                            </Avatar>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-
-                            {isLoading && (
-                                <div className="flex items-start gap-4 justify-start">
-                                    <div className="relative w-10 h-10 border rounded-full flex flex-col justify-center items-center">
-                                        <Brain className="h-5 w-5 text-zinc-400" />
-                                    </div>
-                                    <div className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800/50 p-5 rounded-xl rounded-bl-md flex items-center gap-3">
-                                        <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
-                                        <span className="text-sm text-zinc-300">
-                                            {chatMode === "review"
-                                                ? "Analyzing code structure and patterns..."
-                                                : chatMode === "fix"
-                                                    ? "Identifying issues and solutions..."
-                                                    : chatMode === "optimize"
-                                                        ? "Analyzing performance bottlenecks..."
-                                                        : "Processing your request..."}
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div ref={messagesEndRef} className="h-1" />
-                        </div>
-                    </div>
-
-                    {/* Enhanced Input Form */}
-                    <form
-                        onSubmit={handleSendMessage}
-                        className="shrink-0 p-4 border-t border-zinc-800 bg-zinc-900/80 backdrop-blur-sm"
-                    >
-                        <div className="flex items-end gap-3">
-                            <div className="flex-1 relative">
-                                <Textarea
-                                    placeholder={
-                                        chatMode === "chat"
-                                            ? "Ask about your code, request improvements, or paste code to analyze..."
-                                            : chatMode === "review"
-                                                ? "Describe what you'd like me to review in your code..."
-                                                : chatMode === "fix"
-                                                    ? "Describe the issue you're experiencing..."
-                                                    : "Describe what you'd like me to optimize..."
-                                    }
-                                    value={input}
-                                    onChange={(e) => setInput(e.target.value)}
-                                    onKeyDown={(e) => {
-                                        if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                                            e.preventDefault();
-                                            void sendCurrentMessage();
-                                        }
-                                    }}
-                                    disabled={isLoading}
-                                    className="min-h-[44px] max-h-32 bg-zinc-800/50 border-zinc-700/50 text-zinc-100 placeholder-zinc-500 focus:border-blue-500 focus:ring-blue-500/20 resize-none pr-20"
-                                    rows={1}
-                                />
-                                <div className="absolute right-3 bottom-3 flex items-center gap-2">
-                                    <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-xs text-zinc-500 bg-zinc-800 border border-zinc-700 rounded">
-                                        Ctrl+Enter
-                                    </kbd>
-                                </div>
-                            </div>
-                            <Button
-                                type="submit"
-                                disabled={isLoading || !input.trim()}
-                                className="h-11 px-4 bg-blue-600 hover:bg-blue-700 text-white border-0 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                            >
-                                {isLoading ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                    <Send className="h-4 w-4" />
-                                )}
-                            </Button>
-                        </div>
-                    </form>
+      <aside
+        className={cn(
+          "fixed right-0 top-0 z-50 flex h-full w-full max-w-4xl flex-col border-l border-zinc-800 bg-zinc-950 shadow-2xl transition-transform duration-300 ease-out",
+          isOpen ? "translate-x-0" : "translate-x-full"
+        )}
+        aria-label="Forge AI assistant"
+      >
+        <header className="shrink-0 border-b border-zinc-800 bg-zinc-950/95">
+          <div className="flex flex-col gap-4 p-4 sm:p-6">
+            <div className="flex items-start justify-between gap-4">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900">
+                  <Image src="/logo.svg" alt="" width={26} height={26} />
                 </div>
-            </>
-        </TooltipProvider>
-    );
-};
+                <div className="min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-lg font-semibold text-zinc-100">
+                      Forge Assistant
+                    </h2>
+                    <Badge
+                      variant="outline"
+                      className="border-zinc-700 bg-zinc-900 text-zinc-300"
+                    >
+                      Ollama
+                    </Badge>
+                  </div>
+                  <p className="mt-1 text-sm text-zinc-400">
+                    Server-side AI help for reviews, fixes, explanations, and optimization.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+                      aria-label="Chat actions"
+                    >
+                      <Download className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuItem
+                      onClick={exportChat}
+                      disabled={messages.length === 0}
+                    >
+                      <Download className="mr-2 h-4 w-4" />
+                      Export transcript
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => setMessages([])}
+                      disabled={messages.length === 0}
+                    >
+                      <Trash2 className="mr-2 h-4 w-4" />
+                      Clear messages
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={onClose}
+                  className="text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+                  aria-label="Close AI assistant"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+              <Tabs
+                value={chatMode}
+                onValueChange={(value) => {
+                  if (value in chatModes) {
+                    setChatMode(value as ChatMode);
+                  }
+                }}
+              >
+                <TabsList className="grid w-full grid-cols-4 lg:w-[430px]">
+                  {Object.entries(chatModes).map(([value, mode]) => {
+                    const Icon = mode.icon;
+                    return (
+                      <TabsTrigger
+                        key={value}
+                        value={value}
+                        className="gap-1.5"
+                      >
+                        <Icon className="h-3.5 w-3.5" />
+                        {mode.label}
+                      </TabsTrigger>
+                    );
+                  })}
+                </TabsList>
+              </Tabs>
+
+              <div className="flex items-center gap-2">
+                <div className="relative min-w-0 flex-1 sm:w-56 sm:flex-none">
+                  <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-zinc-500" />
+                  <Input
+                    placeholder="Search messages..."
+                    value={searchTerm}
+                    onChange={(event) => setSearchTerm(event.target.value)}
+                    className="h-9 border-zinc-800 bg-zinc-900 pl-8 text-zinc-100 placeholder:text-zinc-500"
+                  />
+                </div>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-9 w-9 border-zinc-800 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
+                      aria-label="Filter messages"
+                    >
+                      <Filter className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {filterOptions.map((option) => (
+                      <DropdownMenuItem
+                        key={option.value}
+                        onClick={() => setFilterType(option.value)}
+                      >
+                        {option.label}
+                        {filterType === option.value ? (
+                          <span className="ml-auto text-xs text-zinc-500">
+                            Active
+                          </span>
+                        ) : null}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            </div>
+
+            <p className="text-sm text-zinc-500">{activeMode.description}</p>
+          </div>
+        </header>
+
+        {errorMessage && (
+          <div className="border-b border-amber-900/50 bg-amber-950/40 px-4 py-3 text-sm text-amber-100 sm:px-6">
+            <div className="flex gap-2">
+              <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-300" />
+              <span>{errorMessage}</span>
+            </div>
+          </div>
+        )}
+
+        <div className="flex-1 overflow-y-auto">
+          <div className="space-y-6 p-4 sm:p-6">
+            {messages.length === 0 && !isLoading && (
+              <div className="mx-auto flex max-w-2xl flex-col items-center py-12 text-center">
+                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900">
+                  <Brain className="h-7 w-7 text-zinc-300" />
+                </div>
+                <h3 className="text-lg font-semibold text-zinc-100">
+                  Start with a concrete coding question
+                </h3>
+                <p className="mt-2 max-w-md text-sm leading-6 text-zinc-400">
+                  The assistant uses the server configured provider. Paste the relevant code, error, or plan for the strongest answer.
+                </p>
+                <div className="mt-6 grid w-full grid-cols-1 gap-2 sm:grid-cols-2">
+                  {activeMode.suggestions.map((suggestion) => (
+                    <button
+                      key={suggestion}
+                      type="button"
+                      onClick={() => setInput(suggestion)}
+                      className="rounded-md border border-zinc-800 bg-zinc-900 px-3 py-2 text-left text-sm text-zinc-300 transition hover:border-zinc-700 hover:bg-zinc-800"
+                    >
+                      {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {messages.length > 0 && filteredMessages.length === 0 && (
+              <div className="flex flex-col items-center py-16 text-center text-zinc-400">
+                <Search className="mb-3 h-8 w-8 text-zinc-600" />
+                <p className="font-medium text-zinc-300">
+                  No matching messages
+                </p>
+                <p className="mt-1 text-sm">
+                  Clear the search or change the filter to see more of the transcript.
+                </p>
+              </div>
+            )}
+
+            {filteredMessages.map((message) => (
+              <div
+                key={message.id}
+                className={cn(
+                  "flex items-start gap-3",
+                  message.role === "user" ? "justify-end" : "justify-start"
+                )}
+              >
+                {message.role === "assistant" && (
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900">
+                    <Brain className="h-4 w-4 text-zinc-300" />
+                  </div>
+                )}
+
+                <div
+                  className={cn(
+                    "group max-w-[85%] rounded-xl px-4 py-3 shadow-sm",
+                    message.role === "user"
+                      ? "rounded-br-md bg-blue-600 text-white"
+                      : "rounded-bl-md border border-zinc-800 bg-zinc-900 text-zinc-100"
+                  )}
+                >
+                  {message.role === "assistant" && (
+                    <MessageTypeIndicator message={message} />
+                  )}
+
+                  <div className="prose prose-invert prose-sm max-w-none">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm, remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
+                      components={{
+                        code: ({ children, className }) => {
+                          const isBlockCode = className?.startsWith("language-");
+
+                          if (!isBlockCode) {
+                            return (
+                              <code className="rounded bg-zinc-800 px-1 py-0.5 text-sm">
+                                {children}
+                              </code>
+                            );
+                          }
+
+                          return (
+                            <pre className="my-4 overflow-x-auto rounded-lg bg-zinc-950 p-4 text-sm text-zinc-100">
+                              <code className={className}>{children}</code>
+                            </pre>
+                          );
+                        },
+                      }}
+                    >
+                      {message.content}
+                    </ReactMarkdown>
+                  </div>
+
+                  <div
+                    className={cn(
+                      "mt-3 flex items-center justify-between gap-3 border-t pt-2 text-xs",
+                      message.role === "user"
+                        ? "border-blue-500/60 text-blue-100"
+                        : "border-zinc-800 text-zinc-500"
+                    )}
+                  >
+                    <span>{message.timestamp.toLocaleTimeString()}</span>
+                    <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => void copyMessage(message.content)}
+                        className="h-6 w-6 text-inherit hover:bg-white/10"
+                        aria-label="Copy message"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setInput(message.content)}
+                        className="h-6 w-6 text-inherit hover:bg-white/10"
+                        aria-label="Reuse message"
+                      >
+                        <RefreshCw className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+                {message.role === "user" && (
+                  <Avatar className="h-9 w-9 shrink-0 border border-zinc-700 bg-zinc-800">
+                    <AvatarFallback className="bg-zinc-700 text-zinc-300">
+                      <User className="h-4 w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                )}
+              </div>
+            ))}
+
+            {isLoading && (
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-zinc-800 bg-zinc-900">
+                  <Brain className="h-4 w-4 text-zinc-300" />
+                </div>
+                <div className="flex items-center gap-3 rounded-xl rounded-bl-md border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-300">
+                  <Loader2 className="h-4 w-4 animate-spin text-blue-400" />
+                  <span>{activeMode.loadingText}</span>
+                </div>
+              </div>
+            )}
+
+            <div ref={messagesEndRef} className="h-1" />
+          </div>
+        </div>
+
+        <form
+          onSubmit={handleSendMessage}
+          className="shrink-0 border-t border-zinc-800 bg-zinc-950/95 p-4 sm:p-5"
+        >
+          <div className="flex items-end gap-3">
+            <div className="relative flex-1">
+              <Textarea
+                placeholder={`Ask Forge to ${activeMode.label.toLowerCase()}...`}
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={handleInputKeyDown}
+                disabled={isLoading}
+                className="max-h-40 min-h-12 resize-none border-zinc-800 bg-zinc-900 pr-24 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-blue-500/30"
+                rows={1}
+              />
+              <kbd className="absolute bottom-3 right-3 hidden rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5 text-xs text-zinc-500 sm:inline-block">
+                Ctrl+Enter
+              </kbd>
+            </div>
+            <Button
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className="h-12 px-4"
+              aria-label="Send message"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </div>
+        </form>
+      </aside>
+    </>
+  );
+}

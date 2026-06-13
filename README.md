@@ -126,6 +126,7 @@ GitHub Actions runs the same release gates on `main` and pull requests.
 - [Architecture](./docs/ARCHITECTURE.md)
 - [Product Plan](./docs/PRODUCT_PLAN.md)
 - [Deployment](./docs/DEPLOYMENT.md)
+- [Release Checklist](./docs/RELEASE_CHECKLIST.md)
 - [Templates](./docs/TEMPLATES.md)
 - [AI Workflows](./docs/AI_WORKFLOWS.md)
 - [Contributing](./docs/CONTRIBUTING.md)

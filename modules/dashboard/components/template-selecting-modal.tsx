@@ -316,7 +316,7 @@ const TemplateSelectionModal = ({
                             style={{ backgroundColor: `${template.color}15` }}
                           >
                             <Image
-                              src={template.icon || "/placeholder.svg"}
+                              src={template.icon || "/logo.svg"}
                               alt={`${template.name} icon`}
                               width={40}
                               height={40}

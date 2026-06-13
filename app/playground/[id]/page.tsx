@@ -56,8 +56,14 @@ const MainPlaygroundPage = () => {
   const { id } = useParams<{ id: string }>();
   const [isPreviewVisible, setIsPreviewVisible] = useState(true);
 
-  const { playgroundData, templateData, isLoading, error, saveTemplateData } =
-    usePlayground(id);
+  const {
+    playgroundData,
+    templateData,
+    isLoading,
+    error,
+    loadPlayground,
+    saveTemplateData,
+  } = usePlayground(id);
 
     const aiSuggestions = useAISuggestions();
 
@@ -297,7 +303,10 @@ const MainPlaygroundPage = () => {
           Something went wrong
         </h2>
         <p className="text-gray-600 mb-4">{error}</p>
-        <Button onClick={() => window.location.reload()} variant="destructive">
+        <Button
+          onClick={() => void loadPlayground()}
+          variant="destructive"
+        >
           Try Again
         </Button>
       </div>
@@ -338,7 +347,7 @@ const MainPlaygroundPage = () => {
         <h2 className="text-xl font-semibold text-amber-600 mb-2">
           No template data available
         </h2>
-        <Button onClick={() => window.location.reload()} variant="outline">
+        <Button onClick={() => void loadPlayground()} variant="outline">
           Reload Template
         </Button>
       </div>
@@ -372,7 +381,7 @@ const MainPlaygroundPage = () => {
                 </h1>
                 <p className="text-xs text-muted-foreground">
                   {openFiles.length} File(s) Open
-                  {hasUnsavedChanges && " • Unsaved changes"}
+                  {hasUnsavedChanges && " - Unsaved changes"}
                 </p>
               </div>
 

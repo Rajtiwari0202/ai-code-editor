@@ -24,7 +24,7 @@ function getOllamaBaseUrl() {
   return (process.env.OLLAMA_BASE_URL || "http://localhost:11434").replace(/\/$/, "")
 }
 
-function getOllamaModel(model?: string) {
+export function getOllamaModel(model?: string) {
   return model || process.env.OLLAMA_MODEL || "codellama:latest"
 }
 

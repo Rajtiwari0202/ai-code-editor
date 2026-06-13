@@ -13,7 +13,7 @@ npm run build
 npm run smoke:prod
 ```
 
-The validation, lint, build, and production smoke command should complete before deployment. `npm run smoke:prod` starts the built server, checks `/` and `/api/health`, then shuts the server down.
+The validation, lint, build, and production smoke command should complete before deployment. `npm run smoke:prod` starts the built server, checks `/`, `/api/health`, `/terms`, and `/privacy`, then shuts the server down.
 
 ## Required Environment Variables
 
@@ -33,6 +33,13 @@ OLLAMA_MODEL=
 
 Use the production URL for `NEXTAUTH_URL` after deployment.
 `OLLAMA_BASE_URL` and `OLLAMA_MODEL` have defaults in code, but production AI behavior should be configured deliberately instead of relying on localhost from a hosted environment.
+
+OAuth callback URLs must match the deployed origin exactly:
+
+```text
+https://your-domain.example/api/auth/callback/github
+https://your-domain.example/api/auth/callback/google
+```
 
 ## Vercel Deployment
 
@@ -68,6 +75,8 @@ WebContainers run in supported browsers and may require cross-origin isolation h
 `GET /api/health` is public and returns a small JSON payload with `service`, `status`, and `timestamp`. Use it for deployment smoke checks and uptime monitoring.
 
 ## Release Checklist
+
+Use [Release Checklist](./RELEASE_CHECKLIST.md) for the complete handoff list.
 
 - `npm run lint` passes.
 - `npm run build` passes.

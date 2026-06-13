@@ -19,7 +19,7 @@ Status: in progress.
 
 - Clean dashboard empty, loading, and error states. Project creation and mutation failures now surface toasts instead of silent success.
 - Improve playground first-load UX while WebContainers boot. Started.
-- Make AI chat states explicit: idle, thinking, streaming, error.
+- Make AI chat states explicit: idle, thinking, provider unavailable, and filtered empty states. Complete.
 - Tighten responsive behavior for dashboard and playground.
 - Replace broken template/image references and add final Open Graph metadata. Template/image references complete.
 - Keep bundled starters runnable through `npm run start`. Complete for React, Next.js, Express, Hono, Vue, and Angular.
@@ -34,6 +34,8 @@ Status: in progress.
 - Create a provider abstraction for Ollama and future hosted models. Started with shared Ollama client.
 - Add request validation for chat, completion, plan, patch, and verify endpoints. Complete.
 - Add request timeouts and graceful provider-unavailable errors. Complete for chat/completion.
+- Return non-sensitive provider/model metadata from chat responses. Complete.
+- Add real streaming support when the provider abstraction supports it.
 - Add prompt templates with versioning.
 - Add secret redaction before sending file context to a model.
 - Store AI action metadata when persistence is appropriate.

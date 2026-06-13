@@ -16,6 +16,20 @@ Forge Editor keeps AI behavior reviewable. The current AI routes support chat, c
 
 AI and review workflow routes use shared Zod schemas in `lib/ai/contracts.ts`. Invalid JSON returns `400`, malformed request fields return `400`, and provider failures return graceful errors where a provider call is involved.
 
+## Provider Behavior
+
+The browser does not choose model credentials directly. Chat and completion requests go through server routes, and the server reads `OLLAMA_BASE_URL` and `OLLAMA_MODEL`. The chat response returns non-sensitive provider metadata (`provider` and `model`) so the transcript can show what answered without exposing secrets.
+
+The current assistant panel supports:
+
+- Idle suggestions for chat, review, fix, and optimize modes.
+- Thinking states while the server request is in flight.
+- Provider-unavailable messaging when Ollama cannot be reached.
+- Search and type filters for existing transcript messages.
+- JSON transcript export for local review.
+
+Streaming UI is intentionally not exposed yet because the current `/api/chat` route returns a single JSON response.
+
 ## Verification Allowlist
 
 The verification route only queues commands that are already part of the project release workflow:

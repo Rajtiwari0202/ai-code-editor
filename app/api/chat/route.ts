@@ -1,4 +1,8 @@
-import { AIProviderError, generateWithOllama } from "@/lib/ai/ollama";
+import {
+  AIProviderError,
+  generateWithOllama,
+  getOllamaModel,
+} from "@/lib/ai/ollama";
 import { readJsonBody } from "@/lib/api/request";
 import { chatRequestSchema, type ChatMessage } from "@/lib/ai/contracts";
 import { NextRequest, NextResponse } from "next/server";
@@ -66,6 +70,8 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({
       response: aiResponse,
+      provider: "Ollama",
+      model: getOllamaModel(),
       timestamp: new Date().toISOString(),
     });
   } catch (error) {
