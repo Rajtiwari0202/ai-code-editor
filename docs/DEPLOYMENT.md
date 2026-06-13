@@ -37,11 +37,14 @@ Use the production URL for `NEXTAUTH_URL` after deployment.
 ## Vercel Deployment
 
 1. Push `main` to GitHub.
-2. Import the repository in Vercel.
-3. Select the Next.js framework preset.
-4. Add all required environment variables.
-5. Deploy.
-6. Test sign-in, dashboard loading, playground creation, editor load, terminal boot, preview load, and AI endpoints.
+2. Wait for GitHub Actions CI to pass on `main`.
+3. Import the repository in Vercel.
+4. Select the Next.js framework preset.
+5. Add all required environment variables.
+6. Deploy.
+7. Test sign-in, dashboard loading, playground creation, editor load, terminal boot, preview load, and AI endpoints.
+
+The template API reads starter files at runtime. `next.config.ts` explicitly includes `templates/forge-starters/**/*` in output tracing for `/api/template/[id]` so serverless deployments have those files available.
 
 ## Database
 
@@ -66,6 +69,7 @@ WebContainers run in supported browsers and may require cross-origin isolation h
 - `npm run build` passes.
 - `npm run validate:env` passes in the target environment.
 - `npm run validate:templates` passes.
+- GitHub Actions CI passes on `main`.
 - Metadata no longer uses generated defaults.
 - README has no broken asset links.
 - OAuth callback URLs match the deployed domain.

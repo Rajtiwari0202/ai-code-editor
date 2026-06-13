@@ -51,6 +51,8 @@ Status: deployment-ready locally; external services still need provisioning.
 - Configure OAuth providers.
 - Configure model provider or local-model instructions.
 - Add environment validation command. Complete.
+- Add CI release gates for env validation, template validation, lint, and build. Complete.
+- Include runtime starter files in serverless output tracing. Complete.
 - Add release checklist and deployment docs. Complete.
 - Verify local production build and static public routes. Complete.
 - Verify WebContainer browser requirements in production.

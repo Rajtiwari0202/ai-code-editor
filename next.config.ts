@@ -1,6 +1,9 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  outputFileTracingIncludes: {
+    "/api/template/[id]": ["./templates/forge-starters/**/*"],
+  },
   images:{
     remotePatterns:[
       {

@@ -118,6 +118,8 @@ npm run validate:env  # Check required deployment environment variables
 npm run validate:templates  # Check bundled starter template contract
 ```
 
+GitHub Actions runs the same release gates on `main` and pull requests.
+
 ## Documentation
 
 - [Architecture](./docs/ARCHITECTURE.md)
