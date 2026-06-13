@@ -5,17 +5,15 @@ import { transformToWebContainerFormat } from "../hooks/transformer";
 import { CheckCircle, Loader2, XCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-import { WebContainer } from "@webcontainer/api";
-import { TemplateFolder } from "@/modules/playground/lib/path-to-json";
-import TerminalComponent from "./terminal";
+import type { WebContainer } from "@webcontainer/api";
+import type { TemplateFolder } from "@/modules/playground/lib/path-to-json";
+import TerminalComponent, { type TerminalRef } from "./terminal";
 
 interface WebContainerPreviewProps {
   templateData: TemplateFolder;
-  serverUrl: string;
   isLoading: boolean;
   error: string | null;
   instance: WebContainer | null;
-  writeFileSync: (path: string, content: string) => Promise<void>;
   forceResetup?: boolean; // Optional prop to force re-setup
 }
 const WebContainerPreview = ({
@@ -23,8 +21,6 @@ const WebContainerPreview = ({
   error,
   instance,
   isLoading,
-  serverUrl,
-  writeFileSync,
   forceResetup = false,
 }: WebContainerPreviewProps) => {
   const [previewUrl, setPreviewUrl] = useState<string>("");
@@ -41,7 +37,7 @@ const WebContainerPreview = ({
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [isSetupInProgress, setIsSetupInProgress] = useState(false);
 
-  const terminalRef = useRef<any>(null);
+  const terminalRef = useRef<TerminalRef | null>(null);
 
   // Reset setup state when forceResetup changes
   useEffect(() => {
@@ -78,14 +74,14 @@ const WebContainerPreview = ({
             // Files are already mounted, just reconnect to existing server
             if (terminalRef.current?.writeToTerminal) {
               terminalRef.current.writeToTerminal(
-                "🔄 Reconnecting to existing WebContainer session...\r\n"
+                "Reconnecting to existing WebContainer session...\r\n"
               );
             }
 
             instance.on("server-ready", (port: number, url: string) => {
               if (terminalRef.current?.writeToTerminal) {
                 terminalRef.current.writeToTerminal(
-                  `🌐 Reconnected to server at ${url}\r\n`
+                  `Reconnected to server at ${url}\r\n`
                 );
               }
 
@@ -101,7 +97,7 @@ const WebContainerPreview = ({
             setLoadingState((prev) => ({ ...prev, starting: true }));
             return;
           }
-        } catch (error) {}
+        } catch {}
 
         // Step-1 transform data
         setLoadingState((prev) => ({ ...prev, transforming: true }));
@@ -109,11 +105,10 @@ const WebContainerPreview = ({
         // Write to terminal
         if (terminalRef.current?.writeToTerminal) {
           terminalRef.current.writeToTerminal(
-            "🔄 Transforming template data...\r\n"
+            "Transforming template data...\r\n"
           );
         }
 
-        // @ts-ignore
         const files = transformToWebContainerFormat(templateData);
         setLoadingState((prev) => ({
           ...prev,
@@ -126,14 +121,14 @@ const WebContainerPreview = ({
 
         if (terminalRef.current?.writeToTerminal) {
           terminalRef.current.writeToTerminal(
-            "📁 Mounting files to WebContainer...\r\n"
+            "Mounting files to WebContainer...\r\n"
           );
         }
         await instance.mount(files);
 
         if (terminalRef.current?.writeToTerminal) {
           terminalRef.current.writeToTerminal(
-            "✅ Files mounted successfully\r\n"
+            "Files mounted successfully\r\n"
           );
         }
         setLoadingState((prev) => ({
@@ -147,7 +142,7 @@ const WebContainerPreview = ({
 
         if (terminalRef.current?.writeToTerminal) {
           terminalRef.current.writeToTerminal(
-            "📦 Installing dependencies...\r\n"
+            "Installing dependencies...\r\n"
           );
         }
 
@@ -173,7 +168,7 @@ const WebContainerPreview = ({
 
         if (terminalRef.current?.writeToTerminal) {
           terminalRef.current.writeToTerminal(
-            "✅ Dependencies installed successfully\r\n"
+            "Dependencies installed successfully\r\n"
           );
         }
 
@@ -188,7 +183,7 @@ const WebContainerPreview = ({
 
         if (terminalRef.current?.writeToTerminal) {
           terminalRef.current.writeToTerminal(
-            "🚀 Starting development server...\r\n"
+            "Starting development server...\r\n"
           );
         }
 
@@ -197,7 +192,7 @@ const WebContainerPreview = ({
         instance.on("server-ready", (port: number, url: string) => {
           if (terminalRef.current?.writeToTerminal) {
             terminalRef.current.writeToTerminal(
-              `🌐 Server ready at ${url}\r\n`
+              `Server ready at ${url}\r\n`
             );
           }
           setPreviewUrl(url);
@@ -224,7 +219,7 @@ const WebContainerPreview = ({
         console.error("Error setting up container:", err);
         const errorMessage = err instanceof Error ? err.message : String(err);
         if (terminalRef.current?.writeToTerminal) {
-          terminalRef.current.writeToTerminal(`❌ Error: ${errorMessage}\r\n`);
+          terminalRef.current.writeToTerminal(`Error: ${errorMessage}\r\n`);
         }
         setSetupError(errorMessage);
         setIsSetupInProgress(false);
@@ -240,10 +235,6 @@ const WebContainerPreview = ({
 
     setupContainer();
   }, [instance, templateData, isSetupComplete, isSetupInProgress]);
-
-  useEffect(() => {
-    return () => {};
-  }, []);
 
   if (isLoading) {
     return (
@@ -301,6 +292,18 @@ const WebContainerPreview = ({
     );
   };
 
+  const statusLabel = loadingState.ready
+    ? "Preview ready"
+    : loadingState.starting
+    ? "Starting server"
+    : loadingState.installing
+    ? "Installing dependencies"
+    : loadingState.mounting
+    ? "Mounting files"
+    : loadingState.transforming
+    ? "Preparing files"
+    : "Waiting";
+
   return (
     <div className="h-full w-full flex flex-col">
       {!previewUrl ? (
@@ -310,6 +313,9 @@ const WebContainerPreview = ({
               value={(currentStep / totalSteps) * 100}
               className="h-2 mb-6"
             />
+            <p className="mb-4 text-sm text-muted-foreground">
+              {statusLabel}
+            </p>
 
             <div className="space-y-4 mb-6">
               <div className="flex items-center gap-3">

@@ -1,59 +1,50 @@
-interface TemplateItem {
-  filename: string;
-  fileExtension: string;
-  content: string;
-  folderName?: string;
-  items?: TemplateItem[];
-}
+import type { FileSystemTree } from "@webcontainer/api";
+import type {
+  TemplateFile,
+  TemplateFolder,
+  TemplateItem,
+} from "@/modules/playground/lib/path-to-json";
 
-interface WebContainerFile {
-  file: {
-    contents: string;
-  };
-}
+type WebContainerNode = FileSystemTree[string];
 
-interface WebContainerDirectory {
-  directory: {
-    [key: string]: WebContainerFile | WebContainerDirectory;
-  };
-}
+const isTemplateFolder = (item: TemplateItem): item is TemplateFolder =>
+  "folderName" in item;
 
-type WebContainerFileSystem = Record<string, WebContainerFile | WebContainerDirectory>;
-
-export function transformToWebContainerFormat(template: { folderName: string; items: TemplateItem[] }): WebContainerFileSystem {
-  function processItem(item: TemplateItem): WebContainerFile | WebContainerDirectory {
-    if (item.folderName && item.items) {
-      // This is a directory
-      const directoryContents: WebContainerFileSystem = {};
-      
-      item.items.forEach(subItem => {
-        const key = subItem.fileExtension 
-          ? `${subItem.filename}.${subItem.fileExtension}`
-          : subItem.folderName!;
-        directoryContents[key] = processItem(subItem);
-      });
-
-      return {
-        directory: directoryContents
-      };
-    } else {
-      // This is a file
-      return {
-        file: {
-          contents: item.content
-        }
-      };
-    }
+const getTemplateItemName = (item: TemplateItem) => {
+  if (isTemplateFolder(item)) {
+    return item.folderName;
   }
 
-  const result: WebContainerFileSystem = {};
-  
-  template.items.forEach(item => {
-    const key = item.fileExtension 
-      ? `${item.filename}.${item.fileExtension}`
-      : item.folderName!;
-    result[key] = processItem(item);
-  });
+  return item.fileExtension
+    ? `${item.filename}.${item.fileExtension}`
+    : item.filename;
+};
 
-  return result;
-}1
+const transformTemplateItem = (item: TemplateItem): WebContainerNode => {
+  if (isTemplateFolder(item)) {
+    return {
+      directory: transformTemplateItems(item.items),
+    };
+  }
+
+  const file = item as TemplateFile;
+
+  return {
+    file: {
+      contents: file.content,
+    },
+  };
+};
+
+const transformTemplateItems = (items: TemplateItem[]): FileSystemTree => {
+  return items.reduce<FileSystemTree>((tree, item) => {
+    tree[getTemplateItemName(item)] = transformTemplateItem(item);
+    return tree;
+  }, {});
+};
+
+export function transformToWebContainerFormat(
+  template: TemplateFolder
+): FileSystemTree {
+  return transformTemplateItems(template.items);
+}

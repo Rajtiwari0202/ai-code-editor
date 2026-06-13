@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from "react";
+import React, { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle, useMemo } from "react";
 import { Terminal } from "xterm";
 import { FitAddon } from "xterm-addon-fit";
 import { WebLinksAddon } from "xterm-addon-web-links";
 import { SearchAddon } from "xterm-addon-search";
+import type { WebContainer, WebContainerProcess } from "@webcontainer/api";
 import "xterm/css/xterm.css";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,10 +13,9 @@ import { Search, Copy, Trash2, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface TerminalProps {
-  webcontainerUrl?: string;
   className?: string;
   theme?: "dark" | "light";
-  webContainerInstance?: any;
+  webContainerInstance?: WebContainer | null;
 }
 
 // Define the methods that will be exposed through the ref
@@ -27,7 +27,6 @@ export interface TerminalRef {
 
 const 
 TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({ 
-  webcontainerUrl, 
   className,
   theme = "dark",
   webContainerInstance
@@ -45,10 +44,9 @@ TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
   const cursorPosition = useRef<number>(0);
   const commandHistory = useRef<string[]>([]);
   const historyIndex = useRef<number>(-1);
-  const currentProcess = useRef<any>(null);
-  const shellProcess = useRef<any>(null);
+  const currentProcess = useRef<WebContainerProcess | null>(null);
 
-  const terminalThemes = {
+  const terminalThemes = useMemo(() => ({
     dark: {
       background: "#09090B",
       foreground: "#FAFAFA",
@@ -95,7 +93,7 @@ TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
       brightCyan: "#06B6D4",
       brightWhite: "#FAFAFA",
     },
-  };
+  }), []);
 
   const writePrompt = useCallback(() => {
     if (term.current) {
@@ -181,12 +179,18 @@ TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
       const exitCode = await process.exit;
       currentProcess.current = null;
 
+      if (exitCode !== 0 && term.current) {
+        term.current.writeln(`\r\nProcess exited with code ${exitCode}`);
+      }
+
       // Show new prompt
       writePrompt();
 
     } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown command error";
       if (term.current) {
-        term.current.writeln(`\r\nCommand not found: ${command}`);
+        term.current.writeln(`\r\nCommand failed: ${command}`);
+        term.current.writeln(message);
         writePrompt();
       }
       currentProcess.current = null;
@@ -312,24 +316,24 @@ TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
     }, 100);
 
     // Welcome message
-    terminal.writeln("🚀 WebContainer Terminal");
+    terminal.writeln("WebContainer Terminal");
     terminal.writeln("Type 'help' for available commands");
     writePrompt();
 
     return terminal;
-  }, [theme, handleTerminalInput, writePrompt]);
+  }, [theme, handleTerminalInput, writePrompt, terminalThemes]);
 
   const connectToWebContainer = useCallback(async () => {
     if (!webContainerInstance || !term.current) return;
 
     try {
       setIsConnected(true);
-      term.current.writeln("✅ Connected to WebContainer");
+      term.current.writeln("[ok] Connected to WebContainer");
       term.current.writeln("Ready to execute commands");
       writePrompt();
     } catch (error) {
       setIsConnected(false);
-      term.current.writeln("❌ Failed to connect to WebContainer");
+      term.current.writeln("[error] Failed to connect to WebContainer");
       console.error("WebContainer connection error:", error);
     }
   }, [webContainerInstance, writePrompt]);
@@ -337,7 +341,7 @@ TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
   const clearTerminal = useCallback(() => {
     if (term.current) {
       term.current.clear();
-      term.current.writeln("🚀 WebContainer Terminal");
+      term.current.writeln("WebContainer Terminal");
       writePrompt();
     }
   }, [writePrompt]);
@@ -403,9 +407,6 @@ TerminalComponent = forwardRef<TerminalRef, TerminalProps>(({
       resizeObserver.disconnect();
       if (currentProcess.current) {
         currentProcess.current.kill();
-      }
-      if (shellProcess.current) {
-        shellProcess.current.kill();
       }
       if (term.current) {
         term.current.dispose();

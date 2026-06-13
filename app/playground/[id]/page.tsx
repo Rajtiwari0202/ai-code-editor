@@ -82,7 +82,6 @@ const MainPlaygroundPage = () => {
   } = useFileExplorer();
 
   const {
-    serverUrl,
     isLoading: containerLoading,
     error: containerError,
     instance,
@@ -518,10 +517,8 @@ const MainPlaygroundPage = () => {
                           <WebContainerPreview
                             templateData={templateData}
                             instance={instance}
-                            writeFileSync={writeFileSync}
                             isLoading={containerLoading}
                             error={containerError}
-                            serverUrl={serverUrl!}
                             forceResetup={false}
                           />
                         </ResizablePanel>
