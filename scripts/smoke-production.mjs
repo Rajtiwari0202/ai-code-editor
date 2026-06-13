@@ -87,6 +87,16 @@ try {
     (body) => body.includes("Forge Editor") && !/vibe|Prepwise|chai/i.test(body),
     "Home route"
   );
+  await assertRoute(
+    "/terms",
+    (body) => body.includes("Terms of Service"),
+    "Terms route"
+  );
+  await assertRoute(
+    "/privacy",
+    (body) => body.includes("Privacy Policy"),
+    "Privacy route"
+  );
 
   console.log(`Production smoke passed at ${baseUrl}`);
 } catch (error) {

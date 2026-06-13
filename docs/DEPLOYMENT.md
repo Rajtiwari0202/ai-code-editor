@@ -76,6 +76,7 @@ WebContainers run in supported browsers and may require cross-origin isolation h
 - `npm run smoke:prod` passes after `npm run build`.
 - GitHub Actions CI passes on `main`.
 - Metadata no longer uses generated defaults.
+- Terms and privacy links resolve.
 - README has no broken asset links.
 - OAuth callback URLs match the deployed domain.
 - Database connectivity works.

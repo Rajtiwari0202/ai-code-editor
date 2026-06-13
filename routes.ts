@@ -7,6 +7,8 @@
 export const publicRoutes: string[] = [
   "/",
   "/api/health",
+  "/privacy",
+  "/terms",
 ];
 
 /**

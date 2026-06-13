@@ -9,15 +9,23 @@ export function Footer() {
           Copyright {new Date().getFullYear()} Forge Editor. Built for
           reviewable AI coding.
         </p>
-        <Link
-          href="https://github.com/Rajtiwari0202/ai-code-editor"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
-        >
-          <Github className="h-4 w-4" />
-          Source on GitHub
-        </Link>
+        <div className="flex flex-wrap items-center gap-4">
+          <Link href="/terms" className="transition-colors hover:text-foreground">
+            Terms
+          </Link>
+          <Link href="/privacy" className="transition-colors hover:text-foreground">
+            Privacy
+          </Link>
+          <Link
+            href="https://github.com/Rajtiwari0202/ai-code-editor"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 transition-colors hover:text-foreground"
+          >
+            <Github className="h-4 w-4" />
+            Source on GitHub
+          </Link>
+        </div>
       </div>
     </footer>
   );
