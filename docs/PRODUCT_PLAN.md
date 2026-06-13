@@ -26,6 +26,7 @@ Status: in progress.
 - Add a template validation command. Complete.
 - Scope playground mutations to the authenticated owner. Complete.
 - Remove nonfunctional dashboard actions before launch. Complete for repository import.
+- Remove broken dashboard sidebar links and empty action icons. Complete.
 - Add public terms and privacy pages for OAuth sign-in links. Complete.
 
 ## Phase 3: AI Layer Hardening

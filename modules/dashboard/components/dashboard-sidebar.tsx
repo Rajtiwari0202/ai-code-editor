@@ -6,14 +6,11 @@ import { usePathname } from "next/navigation"
 import {
   Code2,
   Compass,
-  FolderPlus,
   History,
   Home,
   LayoutDashboard,
   Lightbulb,
   type LucideIcon,
-  Plus,
-  Settings,
   Star,
   Terminal,
   Zap,
@@ -27,7 +24,6 @@ import {
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
-  SidebarGroupAction,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -36,15 +32,13 @@ import {
 } from "@/components/ui/sidebar"
 import Image from "next/image"
 
-// Define the interface for a single playground item, icon is now a string
 interface PlaygroundData {
   id: string
   name: string
-  icon: string // Changed to string
+  icon: string
   starred: boolean
 }
 
-// Map icon names (strings) to their corresponding LucideIcon components
 const lucideIconMap: Record<string, LucideIcon> = {
   Zap: Zap,
   Lightbulb: Lightbulb,
@@ -52,8 +46,7 @@ const lucideIconMap: Record<string, LucideIcon> = {
   Compass: Compass,
   FlameIcon: FlameIcon,
   Terminal: Terminal,
-  Code2: Code2, // Include the default icon
-  // Add any other icons you might use dynamically
+  Code2: Code2,
 }
 
 export function DashboardSidebar({ initialPlaygroundData }: { initialPlaygroundData: PlaygroundData[] }) {
@@ -97,9 +90,6 @@ export function DashboardSidebar({ initialPlaygroundData }: { initialPlaygroundD
             <Star className="h-4 w-4 mr-2" />
             Starred
           </SidebarGroupLabel>
-          <SidebarGroupAction title="Add starred playground">
-            <Plus className="h-4 w-4" />
-          </SidebarGroupAction>
           <SidebarGroupContent>
             <SidebarMenu>
 
@@ -133,9 +123,6 @@ export function DashboardSidebar({ initialPlaygroundData }: { initialPlaygroundD
             <History className="h-4 w-4 mr-2" />
             Recent
           </SidebarGroupLabel>
-          <SidebarGroupAction title="Create new playground">
-            <FolderPlus className="h-4 w-4" />
-          </SidebarGroupAction>
           <SidebarGroupContent>
             <SidebarMenu>
               {starredPlaygrounds.length === 0 && recentPlaygrounds.length === 0 ? null : (
@@ -145,7 +132,7 @@ export function DashboardSidebar({ initialPlaygroundData }: { initialPlaygroundD
                     <SidebarMenuItem key={playground.id}>
                       <SidebarMenuButton
                         asChild
-                        isActive={pathname === `playground/${playground.id}`}
+                        isActive={pathname === `/playground/${playground.id}`}
                         tooltip={playground.name}
                       >
                         <Link href={`/playground/${playground.id}`}>
@@ -157,29 +144,11 @@ export function DashboardSidebar({ initialPlaygroundData }: { initialPlaygroundD
                   );
                 })
               )}
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild tooltip="View all">
-                  <Link href="/playgrounds">
-                    <span className="text-sm text-muted-foreground">View all playgrounds</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
-      <SidebarFooter>
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton asChild tooltip="Settings">
-              <Link href="/settings">
-                <Settings className="h-4 w-4" />
-                <span>Settings</span>
-              </Link>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+      <SidebarFooter />
       <SidebarRail />
     </Sidebar>
   )
