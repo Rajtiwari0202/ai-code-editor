@@ -1,78 +1,122 @@
-# Forge Editor
+# 🧠 Vibecode Editor – AI-Powered Web IDE
 
-Forge Editor is a local-first AI code editor interface built with Next.js. It is designed around a simple principle: AI should help a developer understand, plan, patch, and verify code changes without hiding the reasoning or making the repository feel generated.
+![Vibecode Editor Thumbnail](public/vibe-code-editor-thumbnaail.svg)
 
-The current version is a polished product prototype for the editor workspace. It establishes the application shell, interaction model, visual language, and documentation needed before connecting real workspace indexing, model providers, file writes, and deployment.
+**Vibecode Editor** is a blazing-fast, AI-integrated web IDE built entirely in the browser using **Next.js App Router**, **WebContainers**, **Monaco Editor**, and **local LLMs via Ollama**. It offers real-time code execution, an AI-powered chat assistant, and support for multiple tech stacks — all wrapped in a stunning developer-first UI.
 
-## Highlights
+---
 
-- IDE-style workspace with explorer, editor, terminal, change review, and assistant panels.
-- Monaco-powered code editor with open tabs, editable file buffers, search, dirty state, save, and reset controls.
-- AI workflow model built around planning, guarded patching, and verification.
-- Structured API routes for plan generation, patch proposals, and verification command filtering.
-- Local-first product direction with explicit room for workspace indexing and secure command execution.
-- Next.js App Router, React 19, Tailwind CSS 4, and shadcn/radix-nova UI primitives.
-- Documentation for architecture, roadmap, deployment, and contribution standards.
+## 🚀 Features
 
-## Tech Stack
+- 🔐 **OAuth Login with NextAuth** – Supports Google & GitHub login.
+- 🎨 **Modern UI** – Built with TailwindCSS & ShadCN UI.
+- 🌗 **Dark/Light Mode** – Seamlessly toggle between themes.
+- 🧱 **Project Templates** – Choose from React, Next.js, Express, Hono, Vue, or Angular.
+- 🗂️ **Custom File Explorer** – Create, rename, delete, and manage files/folders easily.
+- 🖊️ **Enhanced Monaco Editor** – Syntax highlighting, formatting, keybindings, and AI autocomplete.
+- 💡 **AI Suggestions with Ollama** – Local models give you code completion on `Ctrl + Space` or double `Enter`. Accept with `Tab`.
+- ⚙️ **WebContainers Integration** – Instantly run frontend/backend apps right in the browser.
+- 💻 **Terminal with xterm.js** – Fully interactive embedded terminal experience.
+- 🤖 **AI Chat Assistant** – Share files with the AI and get help, refactors, or explanations.
 
-- Next.js 16 App Router
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- shadcn/radix-nova components
-- Lucide React icons
-- Monaco Editor
+---
 
-## Getting Started
+## 🧱 Tech Stack
+
+| Layer         | Technology                                   |
+|---------------|----------------------------------------------|
+| Framework     | Next.js 15 (App Router)                      |
+| Styling       | TailwindCSS, ShadCN UI                       |
+| Language      | TypeScript                                   |
+| Auth          | NextAuth (Google + GitHub OAuth)             |
+| Editor        | Monaco Editor                                |
+| AI Suggestion | Ollama (LLMs running locally via Docker)     |
+| Runtime       | WebContainers                                |
+| Terminal      | xterm.js                                     |
+| Database      | MongoDB (via DATABASE_URL)                   |
+
+---
+
+## 🛠️ Getting Started
+
+### 1. Clone the Repo
+
+```bash
+git clone https://github.com/your-username/vibecode-editor.git
+cd vibecode-editor
+````
+
+### 2. Install Dependencies
 
 ```bash
 npm install
+```
+
+### 3. Set Up Environment Variables
+
+Create a `.env.local` file using the template:
+
+```bash
+cp .env.example .env.local
+```
+
+Then, fill in your credentials:
+
+```env
+AUTH_SECRET=your_auth_secret
+AUTH_GOOGLE_ID=your_google_client_id
+AUTH_GOOGLE_SECRET=your_google_secret
+AUTH_GITHUB_ID=your_github_client_id
+AUTH_GITHUB_SECRET=your_github_secret
+DATABASE_URL=your_mongodb_connection_string
+NEXTAUTH_URL=http://localhost:3000
+```
+
+### 4. Start Local Ollama Model
+
+Make sure [Ollama](https://ollama.com/) and Docker are installed, then run:
+
+```bash
+ollama run codellama
+```
+
+Or use your preferred model that supports code generation.
+
+### 5. Run the Development Server
+
+```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Visit `http://localhost:3000` in your browser.
 
-## Scripts
 
-```bash
-npm run dev      # Start the local development server
-npm run lint     # Run ESLint
-npm run build    # Create a production build
-npm run start    # Start the production server
+---
+
+## 🎯 Keyboard Shortcuts
+
+* `Ctrl + Space` or `Double Enter`: Trigger AI suggestions
+* `Tab`: Accept AI suggestion
+* `/`: Open Command Palette (if implemented)
+
+---
+
+
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+## 🙏 Acknowledgements
+
+* [Monaco Editor](https://microsoft.github.io/monaco-editor/)
+* [Ollama](https://ollama.com/) – for offline LLMs
+* [WebContainers](https://webcontainers.io/)
+* [xterm.js](https://xtermjs.org/)
+* [NextAuth.js](https://next-auth.js.org/)
+
 ```
-
-## Project Structure
-
-```text
-app/
-  api/              Safe planning, patch proposal, and verification route contracts
-  globals.css       Global Tailwind theme and design tokens
-  layout.tsx        Root metadata, fonts, and document shell
-  page.tsx          Home route that renders the editor workspace
-components/editor/  Product-specific editor workspace components
-components/ui/      Reusable shadcn/radix-nova primitives
-docs/               Architecture, roadmap, and deployment notes
-hooks/              Shared React hooks
-lib/                Shared utilities, workspace model data, AI contracts, and verification helpers
-public/             Static assets
-```
-
-## Documentation
-
-- [Architecture](./docs/ARCHITECTURE.md)
-- [Product Plan](./docs/PRODUCT_PLAN.md)
-- [Deployment](./docs/DEPLOYMENT.md)
-- [Contributing](./docs/CONTRIBUTING.md)
-
-## Current Status
-
-This repository currently ships the frontend editor shell and safe API contracts for planning, patch proposals, and verification command filtering. It does not yet execute model calls, mutate local files, index a real repository, or run commands from the browser. Those capabilities should be added behind explicit server-side boundaries and permission checks, as described in the architecture and product plan.
-
-## Deployment Target
-
-The frontend can deploy cleanly to Vercel or any Node-compatible Next.js host. The future local workspace agent should run separately from the hosted web UI because it needs file-system and process access.
-
-## License
-
-Add a license before publishing the project publicly.
