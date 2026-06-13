@@ -80,6 +80,7 @@ templates/
 Forge Editor should keep AI actions reviewable:
 
 - Prompt context should be explicit and scoped to selected project files.
+- AI routes validate JSON payloads through shared schemas before planning, proposing patches, queueing verification, or calling the provider.
 - Patch generation should return proposals before file mutation.
 - Verification commands should pass through an allowlist.
 - Provider keys must stay server-side.

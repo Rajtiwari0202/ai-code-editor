@@ -1,24 +1,30 @@
 import { NextResponse } from "next/server"
 
-import type { PatchProposalRequest } from "@/lib/ai/contracts"
+import { readJsonBody } from "@/lib/api/request"
+import { patchProposalRequestSchema } from "@/lib/ai/contracts"
 import { createPatchProposal } from "@/lib/ai/planner"
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as Partial<PatchProposalRequest>
+  const body = await readJsonBody(request)
 
-  if (!body.intent || !body.activeFile) {
+  if (!body.ok) {
     return NextResponse.json(
-      { error: "intent and activeFile are required" },
+      { error: body.error },
       { status: 400 }
     )
   }
 
-  return NextResponse.json(
-    createPatchProposal({
-      intent: body.intent,
-      activeFile: body.activeFile,
-      dirtyFiles: body.dirtyFiles ?? [],
-      selectedStepIds: body.selectedStepIds,
-    })
-  )
+  const result = patchProposalRequestSchema.safeParse(body.data)
+
+  if (!result.success) {
+    return NextResponse.json(
+      {
+        error: "Invalid patch proposal request",
+        issues: result.error.flatten().fieldErrors,
+      },
+      { status: 400 }
+    )
+  }
+
+  return NextResponse.json(createPatchProposal(result.data))
 }

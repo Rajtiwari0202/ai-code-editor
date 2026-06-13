@@ -124,6 +124,7 @@ npm run validate:templates  # Check bundled starter template contract
 - [Product Plan](./docs/PRODUCT_PLAN.md)
 - [Deployment](./docs/DEPLOYMENT.md)
 - [Templates](./docs/TEMPLATES.md)
+- [AI Workflows](./docs/AI_WORKFLOWS.md)
 - [Contributing](./docs/CONTRIBUTING.md)
 
 ## Current Status

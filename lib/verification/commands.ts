@@ -1,12 +1,23 @@
-const commandAllowlist = ["npm run lint", "npm run build", "npm test"] as const
+const commandAllowlist = [
+  "npm run validate:env",
+  "npm run validate:templates",
+  "npm run lint",
+  "npm run build",
+] as const
 
 export const allowedVerificationCommands = [...commandAllowlist]
 
 export function splitAllowedCommands(commands: string[] = []) {
   return commands.reduce(
     (result, command) => {
-      if (commandAllowlist.includes(command as (typeof commandAllowlist)[number])) {
-        result.allowed.push(command)
+      const normalizedCommand = command.trim()
+
+      if (
+        commandAllowlist.includes(
+          normalizedCommand as (typeof commandAllowlist)[number]
+        )
+      ) {
+        result.allowed.push(normalizedCommand)
       } else {
         result.blocked.push(command)
       }

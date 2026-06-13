@@ -29,7 +29,7 @@ Status: in progress.
 ## Phase 3: AI Layer Hardening
 
 - Create a provider abstraction for Ollama and future hosted models. Started with shared Ollama client.
-- Add request validation for chat and completion endpoints. Partially complete.
+- Add request validation for chat, completion, plan, patch, and verify endpoints. Complete.
 - Add request timeouts and graceful provider-unavailable errors. Complete for chat/completion.
 - Add prompt templates with versioning.
 - Add secret redaction before sending file context to a model.
@@ -40,7 +40,7 @@ Status: in progress.
 - Expand `/api/plan`, `/api/patch`, and `/api/verify` beyond deterministic scaffolding.
 - Show proposed diffs in the playground before applying changes.
 - Require user approval before file mutations.
-- Run verification through a constrained command allowlist.
+- Run verification through a constrained command allowlist. Queueing complete; execution pending.
 - Attach command output to the assistant response.
 
 ## Phase 5: Deployment

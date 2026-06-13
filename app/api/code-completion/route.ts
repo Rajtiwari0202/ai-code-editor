@@ -1,14 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+import { readJsonBody } from "@/lib/api/request";
+import { codeSuggestionRequestSchema } from "@/lib/ai/contracts";
 import { generateWithOllama } from "@/lib/ai/ollama";
-
-interface CodeSuggestionRequest {
-  fileContent: string;
-  cursorLine: number;
-  cursorColumn: number;
-  suggestionType: string;
-  fileName?: string;
-}
 
 interface CodeContext {
   language: string;
@@ -25,18 +19,29 @@ interface CodeContext {
 
 export async function POST(request: NextRequest) {
   try {
-    const body: CodeSuggestionRequest = await request.json();
+    const body = await readJsonBody(request);
 
-    const { fileContent, cursorLine, cursorColumn, suggestionType, fileName } =
-      body;
-
-    // Validate input
-    if (!fileContent || cursorLine < 0 || cursorColumn < 0 || !suggestionType) {
+    if (!body.ok) {
       return NextResponse.json(
-        { error: "Invalid input parameters" },
+        { error: body.error },
         { status: 400 }
       );
     }
+
+    const result = codeSuggestionRequestSchema.safeParse(body.data);
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          error: "Invalid code completion request",
+          issues: result.error.flatten().fieldErrors,
+        },
+        { status: 400 }
+      );
+    }
+
+    const { fileContent, cursorLine, cursorColumn, suggestionType, fileName } =
+      result.data;
 
     const context = analyzeCodeContext(
       fileContent,

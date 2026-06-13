@@ -1,28 +1,7 @@
 import { AIProviderError, generateWithOllama } from "@/lib/ai/ollama";
+import { readJsonBody } from "@/lib/api/request";
+import { chatRequestSchema, type ChatMessage } from "@/lib/ai/contracts";
 import { NextRequest, NextResponse } from "next/server";
-
-interface ChatMessage {
-  role: "user" | "assistant";
-  content: string;
-}
-
-interface ChatRequest {
-  message: string;
-  history: ChatMessage[];
-}
-
-function isChatMessage(value: unknown): value is ChatMessage {
-  if (typeof value !== "object" || value === null) {
-    return false;
-  }
-
-  const message = value as Partial<ChatMessage>;
-
-  return (
-    (message.role === "user" || message.role === "assistant") &&
-    typeof message.content === "string"
-  );
-}
 
 async function generateAIResponse(messages: ChatMessage[]): Promise<string> {
   const systemPrompt = `You are a helpful AI coding assistant. You help developers with:
@@ -49,21 +28,30 @@ Always provide clear, practical answers. Use proper code formatting when showing
 
 export async function POST(req: NextRequest) {
   try {
-    const body: ChatRequest = await req.json();
-    const { message, history = [] } = body;
+    const body = await readJsonBody(req);
 
-    // Validate input
-    if (!message || typeof message !== "string") {
+    if (!body.ok) {
       return NextResponse.json(
-        { error: "Message is required and must be a string" },
+        { error: body.error },
         { status: 400 }
       );
     }
 
-    // Validate history format
-    const validHistory = Array.isArray(history) ? history.filter(isChatMessage) : [];
+    const result = chatRequestSchema.safeParse(body.data);
 
-    const recentHistory = validHistory.slice(-10);
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          error: "Invalid chat request",
+          issues: result.error.flatten().fieldErrors,
+        },
+        { status: 400 }
+      );
+    }
+
+    const { message, history } = result.data;
+
+    const recentHistory = history.slice(-10);
 
     const messages: ChatMessage[] = [
       ...recentHistory,

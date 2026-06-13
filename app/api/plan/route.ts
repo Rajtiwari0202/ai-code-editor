@@ -1,23 +1,30 @@
 import { NextResponse } from "next/server"
 
-import type { PlanRequest } from "@/lib/ai/contracts"
+import { readJsonBody } from "@/lib/api/request"
+import { planRequestSchema } from "@/lib/ai/contracts"
 import { createPlan } from "@/lib/ai/planner"
 
 export async function POST(request: Request) {
-  const body = (await request.json()) as Partial<PlanRequest>
+  const body = await readJsonBody(request)
 
-  if (!body.intent || !body.activeFile) {
+  if (!body.ok) {
     return NextResponse.json(
-      { error: "intent and activeFile are required" },
+      { error: body.error },
       { status: 400 }
     )
   }
 
-  return NextResponse.json(
-    createPlan({
-      intent: body.intent,
-      activeFile: body.activeFile,
-      dirtyFiles: body.dirtyFiles ?? [],
-    })
-  )
+  const result = planRequestSchema.safeParse(body.data)
+
+  if (!result.success) {
+    return NextResponse.json(
+      {
+        error: "Invalid plan request",
+        issues: result.error.flatten().fieldErrors,
+      },
+      { status: 400 }
+    )
+  }
+
+  return NextResponse.json(createPlan(result.data))
 }
