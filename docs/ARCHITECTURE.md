@@ -45,6 +45,7 @@ app/
   api/plan/                Deterministic plan contract
   api/patch/               Patch proposal contract
   api/verify/              Verification allowlist contract
+  api/health/              Public deployment health check
 
 modules/
   auth/                    Auth actions, hooks, and user UI

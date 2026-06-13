@@ -10,10 +10,10 @@ npm run validate:env
 npm run validate:templates
 npm run lint
 npm run build
-npm run start
+npm run smoke:prod
 ```
 
-The validation, lint, build, and production smoke command should complete before deployment. Stop the local production server after the smoke test.
+The validation, lint, build, and production smoke command should complete before deployment. `npm run smoke:prod` starts the built server, checks `/` and `/api/health`, then shuts the server down.
 
 ## Required Environment Variables
 
@@ -63,12 +63,17 @@ Do not expose model provider secrets through `NEXT_PUBLIC_*`.
 
 WebContainers run in supported browsers and may require cross-origin isolation headers depending on the runtime path. Before launch, verify the deployed playground in the target browsers.
 
+## Health Check
+
+`GET /api/health` is public and returns a small JSON payload with `service`, `status`, and `timestamp`. Use it for deployment smoke checks and uptime monitoring.
+
 ## Release Checklist
 
 - `npm run lint` passes.
 - `npm run build` passes.
 - `npm run validate:env` passes in the target environment.
 - `npm run validate:templates` passes.
+- `npm run smoke:prod` passes after `npm run build`.
 - GitHub Actions CI passes on `main`.
 - Metadata no longer uses generated defaults.
 - README has no broken asset links.

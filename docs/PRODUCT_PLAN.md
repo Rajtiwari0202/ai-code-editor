@@ -53,6 +53,7 @@ Status: deployment-ready locally; external services still need provisioning.
 - Add environment validation command. Complete.
 - Add CI release gates for env validation, template validation, lint, and build. Complete.
 - Include runtime starter files in serverless output tracing. Complete.
+- Add an automated production smoke check and public health endpoint. Complete.
 - Add release checklist and deployment docs. Complete.
 - Verify local production build and static public routes. Complete.
 - Verify WebContainer browser requirements in production.
