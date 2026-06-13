@@ -1,9 +1,12 @@
 import { create } from "zustand";
 import { toast } from "sonner";
+import type { WebContainer } from "@webcontainer/api";
 
-import { TemplateFile, TemplateFolder } from "../lib/path-to-json";
+import type { TemplateFile, TemplateFolder } from "../lib/path-to-json";
 
 import { generateFileId } from "../lib";
+
+type WebContainerInstance = WebContainer | null;
 
 interface OpenFile extends TemplateFile {
   id: string;
@@ -36,14 +39,14 @@ interface FileExplorerState {
     newFile: TemplateFile,
     parentPath: string,
     writeFileSync: (filePath: string, content: string) => Promise<void>,
-    instance: any,
+    instance: WebContainerInstance,
     saveTemplateData: (data: TemplateFolder) => Promise<void>
   ) => Promise<void>;
 
   handleAddFolder: (
     newFolder: TemplateFolder, 
-    parentPath: string, 
-    instance: any, 
+    parentPath: string,
+    instance: WebContainerInstance,
     saveTemplateData: (data: TemplateFolder) => Promise<void>
   ) => Promise<void>;
 
@@ -74,8 +77,7 @@ interface FileExplorerState {
   updateFileContent: (fileId: string, content: string) => void;
 }
 
-// @ts-ignore
-export const useFileExplorer = create<FileExplorerState>((set, get) => ({
+export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
   templateData: null,
   playgroundId: "",
   openFiles: [] satisfies OpenFile[],
@@ -150,7 +152,7 @@ export const useFileExplorer = create<FileExplorerState>((set, get) => ({
     });
   },
 
-  handleAddFile:async(newFile , parentPath , writeFileSync , instance , saveTemplateData)=>{
+  handleAddFile:async(newFile , parentPath , writeFileSync , _instance , saveTemplateData)=>{
         const { templateData } = get();
     if (!templateData) return;
 

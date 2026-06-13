@@ -5,10 +5,15 @@ import type { TemplateFolder } from "../lib/path-to-json";
 import { getPlaygroundById, SaveUpdatedCode } from "../actions";
 
 interface PlaygroundData {
-  id: string;
   title?: string;
-  [key: string]: any;
+  templateFiles?: {
+    content: unknown;
+  }[];
 }
+
+type TemplateApiResponse = {
+  templateJson?: TemplateFolder | TemplateFolder["items"];
+};
 
 interface UsePlaygroundReturn {
   playgroundData: PlaygroundData | null;
@@ -36,12 +41,11 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
 
       const data = await getPlaygroundById(id);
 
-      //   @ts-ignore
-      setPlaygroundData(data);
+      setPlaygroundData(data ?? null);
       const rawContent = data?.templateFiles?.[0]?.content;
 
       if (typeof rawContent === "string") {
-        const parsedContent = JSON.parse(rawContent);
+        const parsedContent = JSON.parse(rawContent) as TemplateFolder;
         setTemplateData(parsedContent);
         toast.success("playground loaded successfully");
         return;
@@ -53,7 +57,7 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
 
       if (!res.ok) throw new Error(`Failed to load template: ${res.status}`);
 
-      const templateRes = await res.json();
+      const templateRes = (await res.json()) as TemplateApiResponse;
 
       if (templateRes.templateJson && Array.isArray(templateRes.templateJson)) {
         setTemplateData({

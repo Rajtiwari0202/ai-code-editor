@@ -47,7 +47,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import "katex/dist/katex.min.css";
 import Image from "next/image";
-import Stream from "stream";
+
+type ChatMode = "chat" | "review" | "fix" | "optimize";
+type ChatResponse = {
+    response?: string;
+    tokens?: number;
+    model?: string;
+};
+
+const chatModes: ChatMode[] = ["chat", "review", "fix", "optimize"];
+
+const isChatMode = (value: string): value is ChatMode =>
+    chatModes.includes(value as ChatMode);
 
 interface ChatMessage {
     role: "user" | "assistant";
@@ -116,9 +127,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
-    const [chatMode, setChatMode] = useState<
-        "chat" | "review" | "fix" | "optimize"
-    >("chat");
+    const [chatMode, setChatMode] = useState<ChatMode>("chat");
     const [searchTerm, setSearchTerm] = useState("");
     const [filterType, setFilterType] = useState<string>("all");
     const [autoSave, setAutoSave] = useState(true);
@@ -140,7 +149,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
         return () => clearTimeout(timeoutId);
     }, [messages, isLoading]);
 
-    const getChatModePrompt = (mode: string, content: string) => {
+    const getChatModePrompt = (mode: ChatMode, content: string) => {
         switch (mode) {
             case "review":
                 return `Please review this code and provide detailed suggestions for improvement, including performance, security, and best practices:\n\n**Request:** ${content}`;
@@ -153,9 +162,10 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
         }
     };
 
-   const handleSendMessage = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!input.trim() || isLoading) return;
+   const sendCurrentMessage = async () => {
+    const trimmedInput = input.trim();
+
+    if (!trimmedInput || isLoading) return;
 
     const messageType =
       chatMode === "chat"
@@ -168,7 +178,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
 
     const newMessage: ChatMessage = {
       role: "user",
-      content: input.trim(),
+      content: trimmedInput,
       timestamp: new Date(),
       id: Date.now().toString(),
       type: messageType,
@@ -179,7 +189,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
     setIsLoading(true);
 
     try {
-      const contextualMessage = getChatModePrompt(chatMode, input.trim());
+      const contextualMessage = getChatModePrompt(chatMode, trimmedInput);
 
       const response = await fetch("/api/chat", {
         method: "POST",
@@ -199,13 +209,15 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
       });
 
       if (response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as ChatResponse;
 
         setMessages((prev) => [
           ...prev,
           {
             role: "assistant",
-            content: data.response,
+            content:
+              data.response ||
+              "I processed the request, but no response text was returned.",
             timestamp: new Date(),
             id: Date.now().toString(),
             type: messageType,
@@ -241,6 +253,11 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
       setIsLoading(false);
     }
   };
+
+    const handleSendMessage = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        void sendCurrentMessage();
+    };
 
     const exportChat = () => {
          const chatData = {
@@ -354,7 +371,11 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
                         {/* Enhanced Controls */}
                         <Tabs
                             value={chatMode}
-                            onValueChange={(value) => setChatMode(value as any)}
+                            onValueChange={(value) => {
+                                if (isChatMode(value)) {
+                                    setChatMode(value);
+                                }
+                            }}
                             className="px-6"
                         >
                             <div className="flex items-center justify-between mb-4">
@@ -620,7 +641,8 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
                                     onChange={(e) => setInput(e.target.value)}
                                     onKeyDown={(e) => {
                                         if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
-                                            handleSendMessage(e as any);
+                                            e.preventDefault();
+                                            void sendCurrentMessage();
                                         }
                                     }}
                                     disabled={isLoading}
@@ -629,7 +651,7 @@ export const AIChatSidePanel: React.FC<AIChatSidePanelProps> = ({
                                 />
                                 <div className="absolute right-3 bottom-3 flex items-center gap-2">
                                     <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-xs text-zinc-500 bg-zinc-800 border border-zinc-700 rounded">
-                                        ⌘↵
+                                        Ctrl+Enter
                                     </kbd>
                                 </div>
                             </div>
