@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 
+import { generateWithOllama } from "@/lib/ai/ollama";
 
 interface CodeSuggestionRequest {
   fileContent: string;
@@ -58,10 +59,12 @@ export async function POST(request: NextRequest) {
         generatedAt: new Date().toISOString(),
       },
     });
-  } catch (error: any) {
+  } catch (error) {
     console.error("Context analysis error:", error);
+    const message = error instanceof Error ? error.message : "Unknown error";
+
     return NextResponse.json(
-      { error: "Internal server error", message: error.message },
+      { error: "Internal server error", message },
       { status: 500 }
     );
   }
@@ -139,26 +142,10 @@ Generate suggestion:`;
 
 async function generateSuggestion(prompt: string): Promise<string> {
   try {
-    const response = await fetch("http://localhost:11434/api/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "codellama:latest",
-        prompt,
-        stream: false,
-        option: {
-          temperature: 0.7,
-          max_tokens: 300,
-        },
-      }),
+    let suggestion = await generateWithOllama(prompt, {
+      maxTokens: 300,
+      temperature: 0.7,
     });
-
-       if (!response.ok) {
-      throw new Error(`AI service error: ${response.statusText}`)
-    }
-
-      const data = await response.json()
-    let suggestion = data.response
 
      // Clean up the suggestion
     if (suggestion.includes("```")) {

@@ -56,7 +56,7 @@ modules/
 lib/
   db.ts                    Prisma client
   template.ts              Template helpers
-  ai/                      Planning/patch contracts
+  ai/                      Planning/patch contracts and Ollama client
   verification/            Command allowlist helpers
   workspace/               Local agent capability contract
 ```
@@ -81,6 +81,7 @@ Forge Editor should keep AI actions reviewable:
 - Verification commands should pass through an allowlist.
 - Provider keys must stay server-side.
 - Local model usage should be configurable and documented.
+- Ollama calls use `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, and bounded request timeouts.
 
 ## Security Boundaries
 
@@ -93,6 +94,6 @@ Forge Editor should keep AI actions reviewable:
 ## Current Engineering Debt
 
 - The remote project contains legacy TypeScript lint debt, mostly `any`, `@ts-ignore`, unused symbols, and optional-chain non-null assertions. ESLint currently reports these as warnings so production builds can pass while debt remains visible.
-- The AI provider layer is not yet fully abstracted.
+- The AI provider layer has a first shared Ollama client, but hosted-provider adapters and richer model selection are still pending.
 - Verification UI is still early; route contracts exist, but command execution is not implemented.
 - Deployment requires real OAuth and database environment variables.

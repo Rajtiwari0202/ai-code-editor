@@ -11,7 +11,7 @@ Status: in progress.
 - Remove duplicate root route conflicts. Complete.
 - Replace generated metadata and corrupted README copy. Complete.
 - Make lint/build usable for deployment while surfacing legacy debt. Complete.
-- Verify production build after merge. Pending.
+- Verify production build after merge. Complete.
 
 ## Phase 2: Product Polish
 
@@ -23,8 +23,9 @@ Status: in progress.
 
 ## Phase 3: AI Layer Hardening
 
-- Create a provider abstraction for Ollama and future hosted models.
-- Add request validation for chat and completion endpoints.
+- Create a provider abstraction for Ollama and future hosted models. Started with shared Ollama client.
+- Add request validation for chat and completion endpoints. Partially complete.
+- Add request timeouts and graceful provider-unavailable errors. Complete for chat/completion.
 - Add prompt templates with versioning.
 - Add secret redaction before sending file context to a model.
 - Store AI action metadata when persistence is appropriate.

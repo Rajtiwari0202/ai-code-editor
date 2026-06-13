@@ -23,7 +23,7 @@ const UserButton = () => {
       <DropdownMenuTrigger>
         <div className={cn("relative rounded-full")}>
           <Avatar>
-            <AvatarImage src={user?.image!} alt={user?.name!} />
+            <AvatarImage src={user?.image || ""} alt={user?.name || "User"} />
             <AvatarFallback className="bg-red-500">
               <User className="text-white" />
             </AvatarFallback>
@@ -34,7 +34,7 @@ const UserButton = () => {
     <DropdownMenuContent className="mr-4">
       <DropdownMenuItem>
         <span>
-          {user?.email}
+          {user?.email || "Signed in"}
         </span>
       </DropdownMenuItem>
       <DropdownMenuSeparator/>

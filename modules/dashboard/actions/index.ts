@@ -18,7 +18,7 @@ export const toggleStarMarked = async (
     if (isChecked) {
       await db.starMark.create({
         data: {
-          userId: userId!,
+          userId,
           playgroundId,
           isMarked: isChecked,
         },
@@ -45,17 +45,22 @@ export const toggleStarMarked = async (
 
 export const getAllPlaygroundForUser = async () => {
   const user = await currentUser();
+  const userId = user?.id;
+
+  if (!userId) {
+    return [];
+  }
 
   try {
     const playground = await db.playground.findMany({
       where: {
-        userId: user?.id,
+        userId,
       },
       include: {
         user: true,
         Starmark:{
             where:{
-                userId:user?.id!
+                userId
             },
             select:{
                 isMarked:true
@@ -76,6 +81,11 @@ export const createPlayground = async (data: {
   description?: string;
 }) => {
   const user = await currentUser();
+  const userId = user?.id;
+
+  if (!userId) {
+    throw new Error("User Id is Required");
+  }
 
   const { template, title, description } = data;
 
@@ -85,7 +95,7 @@ export const createPlayground = async (data: {
         title: title,
         description: description,
         template: template,
-        userId: user?.id!,
+        userId,
       },
     });
 

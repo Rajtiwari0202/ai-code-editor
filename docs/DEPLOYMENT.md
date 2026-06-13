@@ -24,6 +24,8 @@ AUTH_GITHUB_ID=
 AUTH_GITHUB_SECRET=
 DATABASE_URL=
 NEXTAUTH_URL=
+OLLAMA_BASE_URL=
+OLLAMA_MODEL=
 ```
 
 Use the production URL for `NEXTAUTH_URL` after deployment.
@@ -43,7 +45,7 @@ The Prisma schema is configured for a MongoDB-compatible datasource through `DAT
 
 ## AI Provider
 
-The current app includes local-model/Ollama-oriented routes. Hosted deployment should either:
+The current app includes local-model/Ollama-oriented routes. `OLLAMA_BASE_URL` defaults to `http://localhost:11434` and `OLLAMA_MODEL` defaults to `codellama:latest`. Hosted deployment should either:
 
 - connect to a controlled server-side model provider, or
 - document that AI completion requires a local development setup.

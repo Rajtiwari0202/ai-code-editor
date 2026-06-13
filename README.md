@@ -80,6 +80,8 @@ AUTH_GITHUB_ID=
 AUTH_GITHUB_SECRET=
 DATABASE_URL=
 NEXTAUTH_URL=http://localhost:3000
+OLLAMA_BASE_URL=http://localhost:11434
+OLLAMA_MODEL=codellama:latest
 ```
 
 Run the app:
@@ -99,6 +101,7 @@ ollama run codellama
 ```
 
 You can swap the model in the API route implementation as the provider layer matures.
+`OLLAMA_BASE_URL` and `OLLAMA_MODEL` can be changed per environment.
 
 ## Scripts
 

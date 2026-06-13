@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { format, parseISO } from "date-fns";
+import { format } from "date-fns";
 import type { Project } from "../types";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -118,10 +118,6 @@ export default function ProjectTable({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleMarkasFavorite = async (project: Project) => {
-    //    Write your logic here
   };
 
   const handleDeleteProject = async () => {
