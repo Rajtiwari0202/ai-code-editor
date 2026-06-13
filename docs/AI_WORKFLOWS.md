@@ -30,6 +30,8 @@ The current assistant panel supports:
 
 Streaming UI is intentionally not exposed yet because the current `/api/chat` route returns a single JSON response.
 
+Inline completion failures are not converted into code snippets. If the provider is unavailable, `/api/code-completion` returns an error response, Monaco clears any pending suggestion, and the AI menu shows the provider issue.
+
 ## Verification Allowlist
 
 The verification route only queues commands that are already part of the project release workflow:

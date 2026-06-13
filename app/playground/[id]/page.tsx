@@ -418,6 +418,7 @@ const MainPlaygroundPage = () => {
                 isEnabled={aiSuggestions.isEnabled}
                 onToggle={aiSuggestions.toggleEnabled}
                 suggestionLoading={aiSuggestions.isLoading}
+                suggestionError={aiSuggestions.error}
                />
 
                 <DropdownMenu>

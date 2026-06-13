@@ -35,6 +35,7 @@ Status: in progress.
 - Add request validation for chat, completion, plan, patch, and verify endpoints. Complete.
 - Add request timeouts and graceful provider-unavailable errors. Complete for chat/completion.
 - Return non-sensitive provider/model metadata from chat responses. Complete.
+- Prevent inline completion provider failures from becoming insertable code. Complete.
 - Add real streaming support when the provider abstraction supports it.
 - Add prompt templates with versioning.
 - Add secret redaction before sending file context to a model.

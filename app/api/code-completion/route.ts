@@ -2,7 +2,11 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { readJsonBody } from "@/lib/api/request";
 import { codeSuggestionRequestSchema } from "@/lib/ai/contracts";
-import { generateWithOllama } from "@/lib/ai/ollama";
+import {
+  AIProviderError,
+  generateWithOllama,
+  getOllamaModel,
+} from "@/lib/ai/ollama";
 
 interface CodeContext {
   language: string;
@@ -60,17 +64,26 @@ export async function POST(request: NextRequest) {
       metadata: {
         language: context.language,
         framework: context.framework,
+        provider: "Ollama",
+        model: getOllamaModel(),
         position: context.cursorPosition,
         generatedAt: new Date().toISOString(),
       },
     });
   } catch (error) {
-    console.error("Context analysis error:", error);
+    console.error("Code completion error:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
+    const status = error instanceof AIProviderError ? 503 : 500;
 
     return NextResponse.json(
-      { error: "Internal server error", message },
-      { status: 500 }
+      {
+        error:
+          status === 503
+            ? "AI provider unavailable"
+            : "Internal server error",
+        message,
+      },
+      { status }
     );
   }
 }
@@ -146,23 +159,17 @@ Generate suggestion:`;
 }
 
 async function generateSuggestion(prompt: string): Promise<string> {
-  try {
-    let suggestion = await generateWithOllama(prompt, {
-      maxTokens: 300,
-      temperature: 0.7,
-    });
+  let suggestion = await generateWithOllama(prompt, {
+    maxTokens: 300,
+    temperature: 0.7,
+  });
 
-     // Clean up the suggestion
-    if (suggestion.includes("```")) {
-      const codeMatch = suggestion.match(/```[\w]*\n?([\s\S]*?)```/)
-      suggestion = codeMatch ? codeMatch[1].trim() : suggestion
-    }
-
-    return suggestion
-  } catch (error) {
-      console.error("AI generation error:", error)
-    return "// AI suggestion unavailable"
+  if (suggestion.includes("```")) {
+    const codeMatch = suggestion.match(/```[\w]*\n?([\s\S]*?)```/)
+    suggestion = codeMatch ? codeMatch[1].trim() : suggestion
   }
+
+  return suggestion
 }
 
 // Helper functions for code analysis

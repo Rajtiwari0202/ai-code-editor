@@ -14,6 +14,7 @@ import {
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { 
+  AlertTriangle,
   Bot, 
   FileText, 
   Loader2,
@@ -31,6 +32,7 @@ interface ToggleAIProps {
   onToggle: (value: boolean) => void;
   
   suggestionLoading: boolean;
+  suggestionError?: string | null;
   loadingProgress?: number;
   activeFeature?: string;
 }
@@ -40,6 +42,7 @@ const ToggleAI: React.FC<ToggleAIProps> = ({
   onToggle,
 
   suggestionLoading,
+  suggestionError,
   loadingProgress = 0,
   activeFeature,
 }) => {
@@ -84,15 +87,26 @@ const ToggleAI: React.FC<ToggleAIProps> = ({
               variant="outline" 
               className={cn(
                 "text-xs",
-                isEnabled 
+                suggestionError
+                  ? "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-900"
+                  : isEnabled 
                   ? "bg-zinc-900 text-zinc-50 border-zinc-800 dark:bg-zinc-50 dark:text-zinc-900 dark:border-zinc-200" 
                   : "bg-muted text-muted-foreground"
               )}
             >
-              {isEnabled ? "Active" : "Inactive"}
+              {suggestionError ? "Issue" : isEnabled ? "Active" : "Inactive"}
             </Badge>
           </DropdownMenuLabel>
           
+          {suggestionError && (
+            <div className="px-3 pb-3">
+              <div className="flex gap-2 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-100">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                <span className="line-clamp-3">{suggestionError}</span>
+              </div>
+            </div>
+          )}
+
           {suggestionLoading && activeFeature && (
             <div className="px-3 pb-3">
               <div className="space-y-2">
