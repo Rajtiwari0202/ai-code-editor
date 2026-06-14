@@ -9,7 +9,6 @@ export interface TemplateFile {
   fileExtension: string;
   content: string;
 }
-
 /**
  * Represents a folder in the template structure which can contain files and other folders
  */
