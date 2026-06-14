@@ -73,7 +73,7 @@ model Playground {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  Starmark StarMark[]
+  starMarks StarMark[]
   userId   String
   user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
 

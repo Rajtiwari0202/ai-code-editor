@@ -63,7 +63,6 @@ interface ProjectTableProps {
   ) => Promise<unknown>;
   onDeleteProject?: (id: string) => Promise<unknown>;
   onDuplicateProject?: (id: string) => Promise<unknown>;
-  
 }
 
 interface EditProjectData {
@@ -76,7 +75,6 @@ export default function ProjectTable({
   onUpdateProject,
   onDeleteProject,
   onDuplicateProject,
-
 }: ProjectTableProps) {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -86,7 +84,6 @@ export default function ProjectTable({
     description: "",
   });
   const [isLoading, setIsLoading] = useState(false);
- 
 
   const handleEditClick = (project: Project) => {
     setSelectedProject(project);
@@ -211,7 +208,9 @@ export default function ProjectTable({
                         className="object-cover"
                       />
                     </div>
-                    <span className="text-sm">{project.user.name || "Unknown user"}</span>
+                    <span className="text-sm">
+                      {project.user.name || "Unknown user"}
+                    </span>
                   </div>
                 </TableCell>
                 <TableCell>
@@ -224,7 +223,10 @@ export default function ProjectTable({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
                       <DropdownMenuItem asChild>
-                        <MarkedToggleButton markedForRevision={project.Starmark[0]?.isMarked} id={project.id} />
+                        <MarkedToggleButton
+                          markedForRevision={project.starMarks[0]?.isMarked}
+                          id={project.id}
+                        />
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link
