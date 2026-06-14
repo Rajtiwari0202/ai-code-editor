@@ -39,13 +39,13 @@ const SignInFormClient = () => {
         <form action={handleGoogleSignIn}>
           <Button type="submit" variant={"outline"} className="w-full">
             <Chrome className="mr-2 h-4 w-4" />
-            <span>Sign in with google</span>
+            <span>Sign in with Google</span>
           </Button>
         </form>
         <form action={handleGithubSignIn}>
           <Button type="submit" variant={"outline"} className="w-full">
             <Github className="mr-2 h-4 w-4" />
-            <span>Sign in with github</span>
+            <span>Sign in with GitHub</span>
           </Button>
         </form>
       </CardContent>
