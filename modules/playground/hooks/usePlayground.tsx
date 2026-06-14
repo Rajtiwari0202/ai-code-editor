@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
 
 import type { TemplateFolder } from "../lib/path-to-json";
-import { getPlaygroundById, SaveUpdatedCode } from "../actions";
+import { getPlaygroundById, savePlaygroundFiles } from "../actions";
 
 interface PlaygroundData {
   title?: string;
@@ -14,6 +14,30 @@ interface PlaygroundData {
 type TemplateApiResponse = {
   templateJson?: TemplateFolder | TemplateFolder["items"];
 };
+
+function isTemplateFolder(value: unknown): value is TemplateFolder {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "folderName" in value &&
+    "items" in value &&
+    typeof value.folderName === "string" &&
+    Array.isArray(value.items)
+  );
+}
+
+function parseSavedTemplateContent(rawContent: unknown): TemplateFolder | null {
+  if (typeof rawContent === "string") {
+    try {
+      const parsedContent = JSON.parse(rawContent) as unknown;
+      return isTemplateFolder(parsedContent) ? parsedContent : null;
+    } catch {
+      return null;
+    }
+  }
+
+  return isTemplateFolder(rawContent) ? rawContent : null;
+}
 
 interface UsePlaygroundReturn {
   playgroundData: PlaygroundData | null;
@@ -44,14 +68,12 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
       setPlaygroundData(data ?? null);
       const rawContent = data?.templateFiles?.[0]?.content;
 
-      if (typeof rawContent === "string") {
-        const parsedContent = JSON.parse(rawContent) as TemplateFolder;
-        setTemplateData(parsedContent);
-        toast.success("playground loaded successfully");
+      const savedTemplate = parseSavedTemplateContent(rawContent);
+
+      if (savedTemplate) {
+        setTemplateData(savedTemplate);
         return;
       }
-
-      //   load template from api if not in saved content
 
       const res = await fetch(`/api/template/${id}`);
 
@@ -72,7 +94,6 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
           }
         );
       }
-      toast.success("Template loaded successfully");
     } catch (error) {
       console.error("Error loading playground:", error);
       setError("Failed to load playground data");
@@ -82,26 +103,26 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
     }
   }, [id]);
 
+  const saveTemplateData = useCallback(
+    async (data: TemplateFolder) => {
+      try {
+        await savePlaygroundFiles(id, data);
+        setTemplateData(data);
+        toast.success("Changes saved successfully");
+      } catch (error) {
+        console.error("Error saving template data:", error);
+        toast.error("Failed to save changes");
+        throw error;
+      }
+    },
+    [id]
+  );
 
+  useEffect(() => {
+    loadPlayground();
+  }, [loadPlayground]);
 
-  const saveTemplateData = useCallback(async(data:TemplateFolder)=>{
-    try {
-          await SaveUpdatedCode(id, data);
-      setTemplateData(data);
-      toast.success("Changes saved successfully");
-    } catch (error) {
-         console.error("Error saving template data:", error);
-      toast.error("Failed to save changes");
-      throw error;
-    }
-  },[id])
-
-
-  useEffect(()=>{
-    loadPlayground()
-  },[loadPlayground])
-
-    return {
+  return {
     playgroundData,
     templateData,
     isLoading,
