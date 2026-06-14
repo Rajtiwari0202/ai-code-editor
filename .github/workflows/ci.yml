@@ -34,6 +34,13 @@ jobs:
       - name: Validate environment contract
         run: npm run validate:env
 
+      - name: Validate hosted AI environment contract
+        run: npm run validate:env
+        env:
+          AI_PROVIDER: openai-compatible
+          OPENAI_API_KEY: ci-openai-key
+          OPENAI_MODEL: ci-openai-model
+
       - name: Validate starter templates
         run: npm run validate:templates
 
