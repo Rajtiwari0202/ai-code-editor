@@ -53,7 +53,7 @@ import {
   Eye,
 } from "lucide-react";
 import { toast } from "sonner";
-import { MarkedToggleButton } from "./marked-toggle";
+import { StarredToggleButton } from "./starred-toggle";
 
 interface ProjectTableProps {
   projects: Project[];
@@ -223,8 +223,8 @@ export default function ProjectTable({
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-48">
                       <DropdownMenuItem asChild>
-                        <MarkedToggleButton
-                          markedForRevision={project.starMarks[0]?.isMarked}
+                        <StarredToggleButton
+                          starred={project.starMarks[0]?.isMarked ?? false}
                           id={project.id}
                         />
                       </DropdownMenuItem>

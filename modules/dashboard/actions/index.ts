@@ -5,7 +5,7 @@ import { currentUser } from "@/modules/auth/actions";
 import { revalidatePath } from "next/cache";
 import type { Prisma } from "@prisma/client";
 
-export const toggleStarMarked = async (
+export const togglePlaygroundStar = async (
   playgroundId: string,
   isChecked: boolean
 ) => {
@@ -59,8 +59,8 @@ export const toggleStarMarked = async (
     revalidatePath("/dashboard");
     return { success: true, isMarked: isChecked };
   } catch (error) {
-    console.error("Error updating problem:", error);
-    return { success: false, error: "Failed to update problem" };
+    console.error("Error updating favorite:", error);
+    return { success: false, error: "Failed to update favorite" };
   }
 };
 
