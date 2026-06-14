@@ -6,7 +6,7 @@ The product direction is simple: keep AI useful, visible, and reviewable. The ap
 
 ## Features
 
-- Authentication with NextAuth, Google, and GitHub providers.
+- Authentication with Auth.js/NextAuth, Google, and GitHub providers.
 - Dashboard for creating, opening, starring, and managing playground projects.
 - Template-driven project creation for React, Next.js, Express, Hono, Vue, and Angular.
 - Monaco-powered editor with syntax highlighting and AI completion hooks.
@@ -15,7 +15,7 @@ The product direction is simple: keep AI useful, visible, and reviewable. The ap
 - AI chat assistant for project-aware code help.
 - Theme provider with light and dark mode support.
 - Safe planning API contracts for future patch generation and verification workflows.
-- Prisma schema for persisted users, accounts, sessions, playgrounds, and templates.
+- Prisma schema for persisted users, OAuth accounts, playgrounds, templates, and JWT-backed sessions.
 
 ## Tech Stack
 

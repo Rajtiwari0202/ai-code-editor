@@ -68,13 +68,14 @@ templates/
 ## Runtime Flow
 
 1. A user signs in through NextAuth.
-2. Dashboard actions create or load a playground record.
-3. The playground route loads saved template data or scans a starter from `templates/forge-starters`.
-4. The file explorer and Monaco editor manipulate the in-memory project tree.
-5. WebContainers boot the project runtime inside the browser.
-6. Terminal and preview panels connect to the WebContainer process.
-7. AI chat/completion endpoints provide coding assistance.
-8. Planning/patch/verify routes provide a safe contract for future reviewable edits.
+2. Auth.js owns OAuth user and account persistence through the Prisma adapter.
+3. Dashboard actions create or load a playground record.
+4. The playground route loads saved template data or scans a starter from `templates/forge-starters`.
+5. The file explorer and Monaco editor manipulate the in-memory project tree.
+6. WebContainers boot the project runtime inside the browser.
+7. Terminal and preview panels connect to the WebContainer process.
+8. AI chat/completion endpoints provide coding assistance.
+9. Planning/patch/verify routes provide a safe contract for future reviewable edits.
 
 ## AI Boundaries
 
@@ -91,6 +92,7 @@ Forge Editor should keep AI actions reviewable:
 ## Security Boundaries
 
 - Browser code must not receive OAuth secrets, database credentials, or provider keys.
+- OAuth account persistence should stay adapter-owned; avoid manually linking accounts by matching email addresses outside an authenticated session.
 - WebContainer execution is browser-contained and should not be treated as host shell access.
 - Playground reads and mutations are scoped to the authenticated owner before loading templates, saving files, editing metadata, deleting, duplicating, or toggling favorites.
 - Future host-file access must run through a local agent with user approval.

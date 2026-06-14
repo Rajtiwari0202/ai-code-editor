@@ -41,6 +41,8 @@ https://your-domain.example/api/auth/callback/github
 https://your-domain.example/api/auth/callback/google
 ```
 
+The Prisma schema follows the Auth.js adapter account shape. New OAuth sign-ins require an email address, and Google sign-ins also require a verified Google email claim.
+
 ## Vercel Deployment
 
 1. Push `main` to GitHub.
