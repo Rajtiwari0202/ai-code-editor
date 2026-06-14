@@ -4,35 +4,38 @@ const nextConfig: NextConfig = {
   outputFileTracingIncludes: {
     "/api/template/[id]": ["./templates/forge-starters/**/*"],
   },
-  images:{
-    remotePatterns:[
+  images: {
+    remotePatterns: [
       {
-        protocol:"https",
-        hostname:"*",
-        port:'',
-        pathname:"/**"
-      }
-    ]
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.googleusercontent.com",
+        pathname: "/**",
+      },
+    ],
   },
   async headers() {
     return [
       {
-        // Apply to all routes
-        source: '/:path*',
+        source: "/:path*",
         headers: [
           {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin',
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
           },
           {
-            key: 'Cross-Origin-Embedder-Policy',
-            value: 'require-corp',
+            key: "Cross-Origin-Embedder-Policy",
+            value: "require-corp",
           },
         ],
       },
     ];
   },
-  reactStrictMode:false
+  reactStrictMode: false,
 };
 
 export default nextConfig;
