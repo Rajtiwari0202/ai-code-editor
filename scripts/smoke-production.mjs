@@ -50,6 +50,27 @@ async function assertRoute(path, predicate, label) {
   }
 }
 
+async function assertIsolationHeaders(path) {
+  const response = await fetch(`${baseUrl}${path}`, {
+    cache: "no-store",
+  });
+
+  const coop = response.headers.get("cross-origin-opener-policy");
+  const coep = response.headers.get("cross-origin-embedder-policy");
+
+  if (coop !== "same-origin") {
+    throw new Error(
+      `Expected ${path} to send Cross-Origin-Opener-Policy: same-origin, received ${coop || "none"}`
+    );
+  }
+
+  if (coep !== "require-corp") {
+    throw new Error(
+      `Expected ${path} to send Cross-Origin-Embedder-Policy: require-corp, received ${coep || "none"}`
+    );
+  }
+}
+
 const child = spawn(
   process.execPath,
   ["node_modules/next/dist/bin/next", "start", "-p", String(port), "-H", host],
@@ -87,6 +108,7 @@ try {
     (body) => body.includes("Forge Editor") && !/vibe|Prepwise|chai/i.test(body),
     "Home route"
   );
+  await assertIsolationHeaders("/");
   await assertRoute(
     "/terms",
     (body) => body.includes("Terms of Service"),

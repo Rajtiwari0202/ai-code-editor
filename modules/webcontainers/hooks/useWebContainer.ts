@@ -16,24 +16,50 @@ interface UseWebContainerReturn {
 }
 
 export const useWebContainer = ({
-  templateData: _templateData,
+  templateData,
 }: UseWebContainerProps): UseWebContainerReturn => {
-  void _templateData;
-
+  const hasTemplateData = Boolean(templateData);
   const [serverUrl, setServerUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [instance, setInstance] = useState<WebContainer | null>(null);
 
   useEffect(() => {
+    if (!hasTemplateData) {
+      setIsLoading(false);
+      return;
+    }
+
     let mounted = true;
     let webcontainerInstance: WebContainer | null = null;
+    let unsubscribeError: (() => void) | null = null;
 
     async function initializeWebContainer() {
       try {
-        webcontainerInstance = await WebContainer.boot();
+        setIsLoading(true);
+        setError(null);
 
-        if (!mounted) return;
+        if (typeof SharedArrayBuffer === "undefined" || !window.crossOriginIsolated) {
+          throw new Error(
+            "WebContainers require cross-origin isolation. Serve the app over HTTPS in production and keep Cross-Origin-Opener-Policy: same-origin plus Cross-Origin-Embedder-Policy: require-corp enabled."
+          );
+        }
+
+        webcontainerInstance = await WebContainer.boot({
+          coep: "require-corp",
+          workdirName: "forge-editor",
+        });
+
+        if (!mounted) {
+          webcontainerInstance.teardown();
+          return;
+        }
+
+        unsubscribeError = webcontainerInstance.on("error", (event) => {
+          if (mounted) {
+            setError(event.message || "WebContainer runtime error");
+          }
+        });
 
         setInstance(webcontainerInstance);
         setIsLoading(false);
@@ -54,9 +80,10 @@ export const useWebContainer = ({
 
     return () => {
       mounted = false;
+      unsubscribeError?.();
       webcontainerInstance?.teardown();
     };
-  }, []);
+  }, [hasTemplateData]);
 
   const writeFileSync = useCallback(
     async (path: string, content: string): Promise<void> => {

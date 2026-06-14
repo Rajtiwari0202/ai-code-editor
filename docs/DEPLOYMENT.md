@@ -13,7 +13,7 @@ npm run build
 npm run smoke:prod
 ```
 
-The validation, lint, build, and production smoke command should complete before deployment. `npm run smoke:prod` starts the built server, checks `/`, `/api/health`, `/terms`, and `/privacy`, then shuts the server down.
+The validation, lint, build, and production smoke command should complete before deployment. `npm run smoke:prod` starts the built server, checks `/`, `/api/health`, `/terms`, `/privacy`, and verifies the cross-origin isolation headers required by WebContainers, then shuts the server down.
 
 ## Required Environment Variables
 
@@ -68,7 +68,14 @@ Do not expose model provider secrets through `NEXT_PUBLIC_*`.
 
 ## WebContainers
 
-WebContainers run in supported browsers and may require cross-origin isolation headers depending on the runtime path. Before launch, verify the deployed playground in the target browsers.
+WebContainers require `SharedArrayBuffer`, HTTPS in production, and cross-origin isolation. `next.config.ts` sends these headers for all routes:
+
+```text
+Cross-Origin-Opener-Policy: same-origin
+Cross-Origin-Embedder-Policy: require-corp
+```
+
+The browser boot path also checks `window.crossOriginIsolated` before starting the runtime. Before launch, verify the deployed playground in the target browsers.
 
 ## Health Check
 
