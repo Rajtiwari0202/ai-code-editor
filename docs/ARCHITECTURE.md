@@ -49,7 +49,7 @@ app/
 
 modules/
   auth/                    Auth actions, hooks, and user UI
-  dashboard/               Project list, templates, repo add flow
+  dashboard/               Project list, template creation, metadata actions
   playground/              Editor, explorer, dialogs, project hooks
   webcontainers/           Terminal, preview, runtime bootstrapping
   ai-chat/                 Assistant sidebar

@@ -129,16 +129,16 @@ const MainPlaygroundPage = () => {
 
   const wrappedHandleDeleteFile = useCallback(
     (file: TemplateFile, parentPath: string) => {
-      return handleDeleteFile(file, parentPath, saveTemplateData);
+      return handleDeleteFile(file, parentPath, instance, saveTemplateData);
     },
-    [handleDeleteFile, saveTemplateData]
+    [handleDeleteFile, instance, saveTemplateData]
   );
 
   const wrappedHandleDeleteFolder = useCallback(
     (folder: TemplateFolder, parentPath: string) => {
-      return handleDeleteFolder(folder, parentPath, saveTemplateData);
+      return handleDeleteFolder(folder, parentPath, instance, saveTemplateData);
     },
-    [handleDeleteFolder, saveTemplateData]
+    [handleDeleteFolder, instance, saveTemplateData]
   );
 
   const wrappedHandleRenameFile = useCallback(
@@ -153,10 +153,11 @@ const MainPlaygroundPage = () => {
         newFilename,
         newExtension,
         parentPath,
+        instance,
         saveTemplateData
       );
     },
-    [handleRenameFile, saveTemplateData]
+    [handleRenameFile, instance, saveTemplateData]
   );
 
   const wrappedHandleRenameFolder = useCallback(
@@ -165,10 +166,11 @@ const MainPlaygroundPage = () => {
         folder,
         newFolderName,
         parentPath,
+        instance,
         saveTemplateData
       );
     },
-    [handleRenameFolder, saveTemplateData]
+    [handleRenameFolder, instance, saveTemplateData]
   );
 
   const activeFile = openFiles.find((file) => file.id === activeFileId);

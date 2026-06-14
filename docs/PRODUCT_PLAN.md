@@ -28,6 +28,7 @@ Status: in progress.
 - Remove nonfunctional dashboard actions before launch. Complete for repository import.
 - Remove broken dashboard sidebar links and empty action icons. Complete.
 - Add public terms and privacy pages for OAuth sign-in links. Complete.
+- Keep file explorer create, delete, and rename operations synced with the live WebContainer filesystem. Complete.
 
 ## Phase 3: AI Layer Hardening
 

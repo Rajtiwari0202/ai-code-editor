@@ -8,6 +8,12 @@ import { generateFileId } from "../lib";
 
 type WebContainerInstance = WebContainer | null;
 
+const getFileName = (file: TemplateFile) =>
+  file.fileExtension ? `${file.filename}.${file.fileExtension}` : file.filename;
+
+const joinPath = (parentPath: string, itemName: string) =>
+  parentPath ? `${parentPath}/${itemName}` : itemName;
+
 interface OpenFile extends TemplateFile {
   id: string;
   hasUnsavedChanges: boolean;
@@ -53,11 +59,13 @@ interface FileExplorerState {
   handleDeleteFile: (
     file: TemplateFile, 
     parentPath: string, 
+    instance: WebContainerInstance,
     saveTemplateData: (data: TemplateFolder) => Promise<void>
   ) => Promise<void>;
   handleDeleteFolder: (
     folder: TemplateFolder,
     parentPath: string,
+    instance: WebContainerInstance,
     saveTemplateData: (data: TemplateFolder) => Promise<void>
   ) => Promise<void>;
   handleRenameFile: (
@@ -65,12 +73,14 @@ interface FileExplorerState {
     newFilename: string,
     newExtension: string,
     parentPath: string,
+    instance: WebContainerInstance,
     saveTemplateData: (data: TemplateFolder) => Promise<void>
   ) => Promise<void>;
   handleRenameFolder: (
     folder: TemplateFolder,
     newFolderName: string,
     parentPath: string,
+    instance: WebContainerInstance,
     saveTemplateData: (data: TemplateFolder) => Promise<void>
   ) => Promise<void>;
   
@@ -230,7 +240,7 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
     }
   },
 
-    handleDeleteFile: async (file, parentPath, saveTemplateData) => {
+    handleDeleteFile: async (file, parentPath, instance, saveTemplateData) => {
     const { templateData, openFiles } = get();
     if (!templateData) return;
 
@@ -267,6 +277,12 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
         get().closeFile(fileId);
       }
 
+      if (instance?.fs) {
+        await instance.fs.rm(joinPath(parentPath, getFileName(file)), {
+          force: true,
+        });
+      }
+
       set({ templateData: updatedTemplateData });
 
       // Use the passed saveTemplateData function
@@ -278,7 +294,7 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
     }
   },
 
-    handleDeleteFolder: async (folder, parentPath, saveTemplateData) => {
+    handleDeleteFolder: async (folder, parentPath, instance, saveTemplateData) => {
     const { templateData } = get();
     if (!templateData) return;
 
@@ -319,6 +335,13 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
       
       closeFilesInFolder(folder, parentPath ? `${parentPath}/${folder.folderName}` : folder.folderName);
 
+      if (instance?.fs) {
+        await instance.fs.rm(joinPath(parentPath, folder.folderName), {
+          force: true,
+          recursive: true,
+        });
+      }
+
       set({ templateData: updatedTemplateData });
 
       // Use the passed saveTemplateData function
@@ -335,6 +358,7 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
     newFilename,
     newExtension,
     parentPath,
+    instance,
     saveTemplateData
   ) => {
     const { templateData, openFiles, activeFileId } = get();
@@ -342,9 +366,6 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
 
     // Generate old and new file IDs using the same logic as openFile
     const oldFileId = generateFileId(file, templateData);
-    const newFile = { ...file, filename: newFilename, fileExtension: newExtension };
-    const newFileId = generateFileId(newFile, templateData);
-
     try {
       const updatedTemplateData = JSON.parse(
         JSON.stringify(templateData)
@@ -375,6 +396,14 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
           fileExtension: newExtension,
         } as TemplateFile;
         currentFolder.items[fileIndex] = updatedFile;
+        const newFileId = generateFileId(updatedFile, updatedTemplateData);
+
+        if (instance?.fs) {
+          await instance.fs.rename(
+            joinPath(parentPath, getFileName(file)),
+            joinPath(parentPath, getFileName(updatedFile))
+          );
+        }
 
         // Update open files with new ID and names
         const updatedOpenFiles = openFiles.map((f) =>
@@ -405,8 +434,8 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
   },
 
   
-  handleRenameFolder: async (folder, newFolderName, parentPath, saveTemplateData) => {
-    const { templateData } = get();
+  handleRenameFolder: async (folder, newFolderName, parentPath, instance, saveTemplateData) => {
+    const { templateData, openFiles, activeFileId } = get();
     if (!templateData) return;
 
     try {
@@ -436,7 +465,26 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
         } as TemplateFolder;
         currentFolder.items[folderIndex] = updatedFolder;
 
-        set({ templateData: updatedTemplateData });
+        if (instance?.fs) {
+          await instance.fs.rename(
+            joinPath(parentPath, folder.folderName),
+            joinPath(parentPath, newFolderName)
+          );
+        }
+
+        const updatedOpenFiles = openFiles.map((file) => ({
+          ...file,
+          id: generateFileId(file, updatedTemplateData),
+        }));
+        const updatedActiveFileId =
+          updatedOpenFiles.find((_, index) => openFiles[index]?.id === activeFileId)
+            ?.id || activeFileId;
+
+        set({
+          templateData: updatedTemplateData,
+          openFiles: updatedOpenFiles,
+          activeFileId: updatedActiveFileId,
+        });
 
         // Use the passed saveTemplateData function
         await saveTemplateData(updatedTemplateData);
