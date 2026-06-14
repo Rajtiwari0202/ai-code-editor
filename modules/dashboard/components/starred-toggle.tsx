@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { StarIcon, StarOffIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 import type React from "react";
 import { forwardRef, useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -18,6 +19,7 @@ export const StarredToggleButton = forwardRef<
   HTMLButtonElement,
   StarredToggleButtonProps
 >(({ starred, id, onClick, className, children, ...props }, ref) => {
+  const router = useRouter();
   const [isStarred, setIsStarred] = useState(starred);
 
   useEffect(() => {
@@ -40,6 +42,7 @@ export const StarredToggleButton = forwardRef<
       toast.success(
         nextStarred ? "Added to favorites" : "Removed from favorites"
       );
+      router.refresh();
     } catch (error) {
       console.error("Failed to update favorite:", error);
       setIsStarred(!nextStarred);

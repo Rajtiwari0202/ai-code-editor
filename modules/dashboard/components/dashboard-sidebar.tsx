@@ -1,6 +1,5 @@
 "use client"
 
-import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import {
@@ -51,8 +50,8 @@ const lucideIconMap: Record<string, LucideIcon> = {
 
 export function DashboardSidebar({ initialPlaygroundData }: { initialPlaygroundData: PlaygroundData[] }) {
   const pathname = usePathname()
-  const [starredPlaygrounds] = useState(initialPlaygroundData.filter((p) => p.starred))
-  const [recentPlaygrounds] = useState(initialPlaygroundData)
+  const starredPlaygrounds = initialPlaygroundData.filter((p) => p.starred)
+  const recentPlaygrounds = initialPlaygroundData
 
   return (
     <Sidebar variant="inset" collapsible="icon" className="border-1 border-r">
