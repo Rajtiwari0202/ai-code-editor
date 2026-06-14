@@ -87,7 +87,7 @@ Forge Editor should keep AI actions reviewable:
 - Verification commands should pass through an allowlist.
 - Provider keys must stay server-side.
 - Local model usage should be configurable and documented.
-- Ollama calls use `OLLAMA_BASE_URL`, `OLLAMA_MODEL`, and bounded request timeouts.
+- AI provider calls use server-side environment variables and bounded request timeouts.
 
 ## Security Boundaries
 

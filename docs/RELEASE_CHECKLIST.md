@@ -20,7 +20,7 @@ Use this checklist before publishing a production build of Forge Editor.
 - `NEXTAUTH_URL` matches the deployed origin exactly.
 - GitHub OAuth callback URL is configured as `<production-origin>/api/auth/callback/github`.
 - Google OAuth callback URL is configured as `<production-origin>/api/auth/callback/google`.
-- `OLLAMA_BASE_URL` and `OLLAMA_MODEL` are configured deliberately, or AI is documented as local-only.
+- `AI_PROVIDER` is configured deliberately. For hosted AI, `OPENAI_API_KEY` and `OPENAI_MODEL` are set server-side; for local AI, `OLLAMA_BASE_URL` and `OLLAMA_MODEL` are documented.
 - No secret values are committed, logged in docs, or exposed through `NEXT_PUBLIC_*`.
 
 ## Product Smoke Test
