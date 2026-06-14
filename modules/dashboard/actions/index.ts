@@ -5,15 +5,22 @@ import { currentUser } from "@/modules/auth/actions";
 import { revalidatePath } from "next/cache";
 import type { Prisma } from "@prisma/client";
 
+async function requireCurrentUserId() {
+  const user = await currentUser();
+  const userId = user?.id;
+
+  if (!userId) {
+    throw new Error("User ID is required");
+  }
+
+  return userId;
+}
+
 export const togglePlaygroundStar = async (
   playgroundId: string,
   isChecked: boolean
 ) => {
-  const user = await currentUser();
-  const userId = user?.id;
-  if (!userId) {
-    throw new Error("User Id is Required");
-  }
+  const userId = await requireCurrentUserId();
 
   try {
     const playground = await db.playground.findFirst({
@@ -102,21 +109,16 @@ export const createPlayground = async (data: {
   template: "REACT" | "NEXTJS" | "EXPRESS" | "VUE" | "HONO" | "ANGULAR";
   description?: string;
 }) => {
-  const user = await currentUser();
-  const userId = user?.id;
-
-  if (!userId) {
-    throw new Error("User Id is Required");
-  }
+  const userId = await requireCurrentUserId();
 
   const { template, title, description } = data;
 
   try {
     const playground = await db.playground.create({
       data: {
-        title: title,
-        description: description,
-        template: template,
+        title,
+        description,
+        template,
         userId,
       },
     });
@@ -129,12 +131,7 @@ export const createPlayground = async (data: {
 };
 
 export const deleteProjectById = async (id: string) => {
-  const user = await currentUser();
-  const userId = user?.id;
-
-  if (!userId) {
-    throw new Error("User Id is Required");
-  }
+  const userId = await requireCurrentUserId();
 
   try {
     const result = await db.playground.deleteMany({
@@ -159,12 +156,7 @@ export const editProjectById = async (
   id: string,
   data: { title: string; description: string }
 ) => {
-  const user = await currentUser();
-  const userId = user?.id;
-
-  if (!userId) {
-    throw new Error("User Id is Required");
-  }
+  const userId = await requireCurrentUserId();
 
   try {
     const result = await db.playground.updateMany({
@@ -187,12 +179,7 @@ export const editProjectById = async (
 };
 
 export const duplicateProjectById = async (id: string) => {
-  const user = await currentUser();
-  const userId = user?.id;
-
-  if (!userId) {
-    throw new Error("User Id is Required");
-  }
+  const userId = await requireCurrentUserId();
 
   try {
     const originalPlayground = await db.playground.findFirst({
