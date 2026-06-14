@@ -27,12 +27,16 @@ AUTH_GITHUB_ID=
 AUTH_GITHUB_SECRET=
 DATABASE_URL=
 NEXTAUTH_URL=
+AI_PROVIDER=
 OLLAMA_BASE_URL=
 OLLAMA_MODEL=
+OPENAI_API_KEY=
+OPENAI_BASE_URL=
+OPENAI_MODEL=
 ```
 
 Use the production URL for `NEXTAUTH_URL` after deployment.
-`OLLAMA_BASE_URL` and `OLLAMA_MODEL` have defaults in code, but production AI behavior should be configured deliberately instead of relying on localhost from a hosted environment.
+`AI_PROVIDER` defaults to `ollama`. `OLLAMA_BASE_URL` and `OLLAMA_MODEL` have defaults in code, but production AI behavior should be configured deliberately instead of relying on localhost from a hosted environment. For hosted AI, set `AI_PROVIDER=openai-compatible` and provide `OPENAI_API_KEY` plus `OPENAI_MODEL` in the deployment environment. `OPENAI_BASE_URL` defaults to `https://api.openai.com/v1` and can point at any compatible server-side endpoint.
 
 OAuth callback URLs must match the deployed origin exactly:
 
@@ -61,9 +65,9 @@ The Prisma schema is configured for a MongoDB-compatible datasource through `DAT
 
 ## AI Provider
 
-The current app includes local-model/Ollama-oriented routes. `OLLAMA_BASE_URL` defaults to `http://localhost:11434` and `OLLAMA_MODEL` defaults to `codellama:latest`. Hosted deployment should either:
+The current app includes local-model/Ollama routes and an OpenAI-compatible hosted-provider mode. `OLLAMA_BASE_URL` defaults to `http://localhost:11434` and `OLLAMA_MODEL` defaults to `codellama:latest`. Hosted deployment should either:
 
-- connect to a controlled server-side model provider, or
+- set `AI_PROVIDER=openai-compatible` and connect to a controlled server-side model provider, or
 - document that AI completion requires a local development setup.
 
 Do not expose model provider secrets through `NEXT_PUBLIC_*`.

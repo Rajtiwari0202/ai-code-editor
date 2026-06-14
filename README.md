@@ -84,11 +84,16 @@ AUTH_GITHUB_ID=
 AUTH_GITHUB_SECRET=
 DATABASE_URL=
 NEXTAUTH_URL=http://localhost:3000
+AI_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=codellama:latest
+OPENAI_API_KEY=
+OPENAI_BASE_URL=https://api.openai.com/v1
+OPENAI_MODEL=
 ```
 
 `OLLAMA_BASE_URL` and `OLLAMA_MODEL` are optional for basic app boot because the API routes have defaults. Configure them when you want local AI chat and completion to call a specific Ollama host/model.
+For hosted AI, set `AI_PROVIDER=openai-compatible` and provide `OPENAI_API_KEY` plus `OPENAI_MODEL` on the server.
 
 Run the app:
 
@@ -100,7 +105,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Local AI Setup
 
-The AI completion flow is designed for local model providers such as Ollama.
+The default AI flow is designed for local model providers such as Ollama.
 
 ```bash
 ollama run codellama
@@ -108,6 +113,7 @@ ollama run codellama
 
 You can swap the model in the API route implementation as the provider layer matures.
 `OLLAMA_BASE_URL` and `OLLAMA_MODEL` can be changed per environment.
+Hosted deployments can use an OpenAI-compatible chat-completions provider without exposing keys to the browser.
 
 ## Scripts
 

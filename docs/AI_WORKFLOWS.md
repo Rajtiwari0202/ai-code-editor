@@ -6,7 +6,7 @@ Forge Editor keeps AI behavior reviewable. The current AI routes support chat, c
 
 | Route | Purpose | Mutation behavior |
 | --- | --- | --- |
-| `POST /api/chat` | Project-aware coding conversation through the configured Ollama provider. | No file mutation. |
+| `POST /api/chat` | Project-aware coding conversation through the configured server-side AI provider. | No file mutation. |
 | `POST /api/code-completion` | Inline editor suggestions based on cursor context. | No file mutation. |
 | `POST /api/plan` | Deterministic plan metadata for a requested change. | No file mutation. |
 | `POST /api/patch` | Patch proposal metadata for approved plan steps. | No file mutation. |
@@ -18,7 +18,14 @@ AI and review workflow routes use shared Zod schemas in `lib/ai/contracts.ts`. I
 
 ## Provider Behavior
 
-The browser does not choose model credentials directly. Chat and completion requests go through server routes, and the server reads `OLLAMA_BASE_URL` and `OLLAMA_MODEL`. The chat response returns non-sensitive provider metadata (`provider` and `model`) so the transcript can show what answered without exposing secrets.
+The browser does not choose model credentials directly. Chat and completion requests go through server routes, and the server reads provider configuration from environment variables.
+
+Supported provider modes:
+
+- `AI_PROVIDER=ollama` uses `OLLAMA_BASE_URL` and `OLLAMA_MODEL`; this is the local development default.
+- `AI_PROVIDER=openai-compatible` uses `OPENAI_API_KEY`, `OPENAI_BASE_URL`, and `OPENAI_MODEL`; this is intended for hosted deployments that expose a chat-completions-compatible API.
+
+The chat and completion responses return non-sensitive provider metadata (`provider` and `model`) so the transcript can show what answered without exposing secrets.
 
 The current assistant panel supports:
 

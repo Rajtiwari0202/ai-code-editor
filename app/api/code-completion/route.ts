@@ -2,11 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 
 import { readJsonBody } from "@/lib/api/request";
 import { codeSuggestionRequestSchema } from "@/lib/ai/contracts";
-import {
-  AIProviderError,
-  generateWithOllama,
-  getOllamaModel,
-} from "@/lib/ai/ollama";
+import { AIProviderError, generateAIText } from "@/lib/ai/provider";
 
 interface CodeContext {
   language: string;
@@ -56,16 +52,16 @@ export async function POST(request: NextRequest) {
 
     const prompt = buildPrompt(context, suggestionType);
 
-    const suggestion = await generateSuggestion(prompt);
+    const aiResult = await generateSuggestion(prompt);
 
     return NextResponse.json({
-      suggestion,
+      suggestion: aiResult.suggestion,
       context,
       metadata: {
         language: context.language,
         framework: context.framework,
-        provider: "Ollama",
-        model: getOllamaModel(),
+        provider: aiResult.provider,
+        model: aiResult.model,
         position: context.cursorPosition,
         generatedAt: new Date().toISOString(),
       },
@@ -158,18 +154,23 @@ Instructions:
 Generate suggestion:`;
 }
 
-async function generateSuggestion(prompt: string): Promise<string> {
-  let suggestion = await generateWithOllama(prompt, {
+async function generateSuggestion(prompt: string) {
+  const result = await generateAIText(prompt, {
     maxTokens: 300,
     temperature: 0.7,
   });
+  let suggestion = result.text;
 
   if (suggestion.includes("```")) {
     const codeMatch = suggestion.match(/```[\w]*\n?([\s\S]*?)```/)
     suggestion = codeMatch ? codeMatch[1].trim() : suggestion
   }
 
-  return suggestion
+  return {
+    model: result.model,
+    provider: result.provider,
+    suggestion,
+  }
 }
 
 // Helper functions for code analysis

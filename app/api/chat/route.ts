@@ -1,13 +1,9 @@
-import {
-  AIProviderError,
-  generateWithOllama,
-  getOllamaModel,
-} from "@/lib/ai/ollama";
+import { AIProviderError, generateAIText } from "@/lib/ai/provider";
 import { readJsonBody } from "@/lib/api/request";
 import { chatRequestSchema, type ChatMessage } from "@/lib/ai/contracts";
 import { NextRequest, NextResponse } from "next/server";
 
-async function generateAIResponse(messages: ChatMessage[]): Promise<string> {
+async function generateAIResponse(messages: ChatMessage[]) {
   const systemPrompt = `You are a helpful AI coding assistant. You help developers with:
 - Code explanations and debugging
 - Best practices and architecture advice  
@@ -23,7 +19,7 @@ Always provide clear, practical answers. Use proper code formatting when showing
     .map((msg) => `${msg.role}: ${msg.content}`)
     .join("\n\n");
 
-  return generateWithOllama(prompt, {
+  return generateAIText(prompt, {
     maxTokens: 1000,
     temperature: 0.7,
     topP: 0.9,
@@ -62,16 +58,12 @@ export async function POST(req: NextRequest) {
       { role: "user", content: message },
     ];
 
-    //   Generate ai response
-
     const aiResponse = await generateAIResponse(messages);
 
-
-
     return NextResponse.json({
-      response: aiResponse,
-      provider: "Ollama",
-      model: getOllamaModel(),
+      response: aiResponse.text,
+      provider: aiResponse.provider,
+      model: aiResponse.model,
       timestamp: new Date().toISOString(),
     });
   } catch (error) {

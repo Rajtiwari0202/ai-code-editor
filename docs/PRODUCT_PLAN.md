@@ -32,7 +32,7 @@ Status: in progress.
 
 ## Phase 3: AI Layer Hardening
 
-- Create a provider abstraction for Ollama and future hosted models. Started with shared Ollama client.
+- Create a provider abstraction for Ollama and future hosted models. Complete for Ollama and OpenAI-compatible chat-completions providers.
 - Add request validation for chat, completion, plan, patch, and verify endpoints. Complete.
 - Add request timeouts and graceful provider-unavailable errors. Complete for chat/completion.
 - Return non-sensitive provider/model metadata from chat responses. Complete.
@@ -56,7 +56,7 @@ Status: deployment-ready locally; external services still need provisioning.
 
 - Provision database.
 - Configure OAuth providers.
-- Configure model provider or local-model instructions.
+- Configure model provider or local-model instructions. Documented for Ollama and OpenAI-compatible providers.
 - Add environment validation command. Complete.
 - Add CI release gates for env validation, template validation, lint, and build. Complete.
 - Include runtime starter files in serverless output tracing. Complete.

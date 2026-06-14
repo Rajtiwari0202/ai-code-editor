@@ -101,7 +101,7 @@ Forge Editor should keep AI actions reviewable:
 
 ## Current Engineering Debt
 
-- The AI provider layer has a first shared Ollama client, but hosted-provider adapters and richer model selection are still pending.
+- The AI provider layer supports local Ollama and hosted OpenAI-compatible chat-completions providers; richer in-app model selection is still pending.
 - Verification UI is still early; route contracts exist, but command execution is not implemented.
 - Deployment requires real OAuth and database environment variables in the target host.
 - The patch workflow is still proposal-first; applying diffs from AI plans remains future work.
