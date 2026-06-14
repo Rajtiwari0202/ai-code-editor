@@ -1,5 +1,7 @@
 # Forge Editor
 
+[![CI](https://github.com/Rajtiwari0202/ai-code-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/Rajtiwari0202/ai-code-editor/actions/workflows/ci.yml)
+
 Forge Editor is a browser-based AI code editor built with Next.js, Monaco Editor, WebContainers, NextAuth, Prisma, and local AI workflows. It gives developers a web IDE with project templates, file exploration, code editing, terminal execution, live preview, AI chat, and code completion.
 
 The product direction is simple: keep AI useful, visible, and reviewable. The app should help a developer plan changes, edit code, run projects, and verify work without hiding important context or mutating code without approval.

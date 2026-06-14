@@ -37,4 +37,4 @@ npm run validate:templates
 3. The API scans the matching starter directory into the JSON tree used by the file explorer.
 4. The WebContainer preview transforms that tree into a mountable filesystem and starts the project with `npm run start`.
 
-Saved playgrounds bypass the starter scan and load the persisted `TemplateFile` content instead.
+Saved playgrounds bypass the starter scan and load the persisted `TemplateFile.content` JSON tree instead. Older rows that contain stringified JSON are still parsed by the playground loader for compatibility, but new saves write structured JSON to the Prisma `Json` field.
