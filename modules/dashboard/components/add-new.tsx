@@ -38,7 +38,7 @@ const AddNewButton = () => {
       <button
         type="button"
         onClick={() => setIsModalOpen(true)}
-        className="group w-full px-6 py-6 flex flex-row justify-between items-center border rounded-lg bg-muted text-left cursor-pointer 
+        className="group w-full px-6 py-6 flex flex-row justify-between items-center border rounded-lg bg-muted text-left cursor-pointer
         transition-all duration-300 ease-in-out
         hover:bg-background hover:border-[#E93F3F] hover:scale-[1.02]
         shadow-[0_2px_10px_rgba(0,0,0,0.08)]
