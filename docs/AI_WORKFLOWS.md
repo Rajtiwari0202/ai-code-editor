@@ -47,9 +47,13 @@ The verification route only queues commands that are already part of the project
 
 ```text
 npm run validate:env
+npm run validate:docs
 npm run validate:templates
+npm run audit:prod
 npm run lint
 npm run build
+npm run smoke:prod
+npm run verify:release
 ```
 
 Commands outside this list are reported as blocked. Execution is intentionally separate from queueing; a future local workspace agent should run approved commands and attach output after user approval.
