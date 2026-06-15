@@ -68,6 +68,8 @@ cd ai-code-editor
 npm install
 ```
 
+Use Node.js 20 or newer with npm 10 or newer.
+
 Create `.env.local` from the example:
 
 ```bash

@@ -4,6 +4,8 @@ Forge Editor is a Next.js app with authentication, Prisma, WebContainers, and AI
 
 ## Preflight
 
+Use Node.js 20 or newer with npm 10 or newer for local verification and production builds.
+
 ```bash
 npm install
 npm run verify:release
