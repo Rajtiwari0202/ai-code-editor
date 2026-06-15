@@ -168,6 +168,13 @@ try {
     "Privacy route"
   );
   await assertRoute(
+    "/auth/sign-in?error=Configuration",
+    (body) =>
+      body.includes("Continue to Forge Editor") &&
+      body.includes("OAuth is not fully configured"),
+    "Sign-in route"
+  );
+  await assertRoute(
     "/robots.txt",
     (body) =>
       body.includes("Sitemap:") &&

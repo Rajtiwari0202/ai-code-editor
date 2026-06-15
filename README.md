@@ -141,7 +141,7 @@ npm run lint     # Run ESLint
 npm run build    # Build for production
 npm run start    # Start production server
 npm run audit:prod  # Fail on high/critical production dependency advisories
-npm run smoke:prod  # Boot the production server and smoke test public/metadata routes, protected API auth, and isolation headers
+npm run smoke:prod  # Boot the production server and smoke test public/auth/metadata routes, protected API auth, and isolation headers
 npm run validate:env  # Check required environment variables from the shell, .env, or .env.local
 npm run validate:env:strict  # Check production-shaped environment values
 npm run validate:docs  # Check local documentation links

@@ -24,7 +24,7 @@ npm run build
 npm run smoke:prod
 ```
 
-The validation, lint, build, and production smoke command should complete before deployment. `npm run smoke:prod` starts the built server, checks `/`, `/api/health`, `/terms`, `/privacy`, `/robots.txt`, `/sitemap.xml`, verifies protected API routes return JSON `401` responses for unauthenticated requests, verifies the cross-origin isolation headers required by WebContainers, then shuts the server down.
+The validation, lint, build, and production smoke command should complete before deployment. `npm run smoke:prod` starts the built server, checks `/`, `/api/health`, `/terms`, `/privacy`, `/auth/sign-in`, `/robots.txt`, `/sitemap.xml`, verifies protected API routes return JSON `401` responses for unauthenticated requests, verifies the cross-origin isolation headers required by WebContainers, then shuts the server down.
 `npm run validate:env` reads values from the shell, `.env`, and `.env.local`; shell-provided host values take precedence.
 
 ## Environment Variables
