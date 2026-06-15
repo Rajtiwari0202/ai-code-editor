@@ -1,5 +1,11 @@
 import SignInForm from "@/modules/auth/components/sign-in-form";
+import type { Metadata } from "next";
 import Image from "next/image";
+
+export const metadata: Metadata = {
+  title: "Sign In",
+  description: "Sign in to Forge Editor with Google or GitHub OAuth.",
+};
 
 interface SignInPageProps {
   searchParams?: Promise<{

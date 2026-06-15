@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Terms of Service",
+  description: "The practical operating terms for using Forge Editor.",
+};
+
 const sections = [
   {
     title: "Use of the product",

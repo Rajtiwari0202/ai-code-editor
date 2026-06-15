@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "How Forge Editor stores account, project, AI, and operational data.",
+};
+
 const sections = [
   {
     title: "Account data",
