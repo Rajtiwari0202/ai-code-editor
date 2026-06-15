@@ -10,6 +10,7 @@ Use this checklist before publishing a production build of Forge Editor.
 - `npm run build` passes.
 - `npm run smoke:prod` passes after `npm run build`.
 - GitHub Actions CI passes on `main`.
+- Protected API routes return JSON `401` responses instead of HTML redirects for unauthenticated fetches.
 - Production responses keep `Cross-Origin-Opener-Policy: same-origin`.
 - Production responses keep `Cross-Origin-Embedder-Policy: require-corp`.
 

@@ -50,21 +50,49 @@ async function assertRoute(path, predicate, label) {
   }
 }
 
-async function assertJsonPost(path, payload, predicate, label) {
+async function assertJsonRequest(method, path, payload, predicate, label) {
   const response = await fetch(`${baseUrl}${path}`, {
-    method: "POST",
+    method,
     cache: "no-store",
     headers: {
+      Accept: "application/json",
       "Content-Type": "application/json",
     },
-    body: JSON.stringify(payload),
+    body: payload === undefined ? undefined : JSON.stringify(payload),
   });
 
   const body = await response.text();
+  const contentType = response.headers.get("content-type") || "";
 
-  if (!predicate(response, body)) {
+  if (!contentType.includes("application/json")) {
+    throw new Error(
+      `${label} returned ${response.status} with ${contentType || "no content type"} instead of JSON`
+    );
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(body);
+  } catch (error) {
+    throw new Error(
+      `${label} returned invalid JSON: ${error instanceof Error ? error.message : String(error)}`
+    );
+  }
+
+  if (!predicate(response, parsed)) {
     throw new Error(`${label} response did not match the expected contract`);
   }
+}
+
+async function assertProtectedJson401(method, path, payload, label) {
+  await assertJsonRequest(
+    method,
+    path,
+    payload,
+    (response, body) =>
+      response.status === 401 && body.error === "Unauthorized",
+    label
+  );
 }
 
 async function assertIsolationHeaders(path) {
@@ -139,20 +167,45 @@ try {
     (body) => body.includes("Privacy Policy"),
     "Privacy route"
   );
-  await assertJsonPost(
+  await assertProtectedJson401(
+    "POST",
+    "/api/chat",
+    {
+      message: "Explain this file structure.",
+      history: [],
+    },
+    "Protected chat API"
+  );
+  await assertProtectedJson401(
+    "POST",
+    "/api/code-completion",
+    {
+      fileContent: "const value = ",
+      cursorLine: 0,
+      cursorColumn: 14,
+      suggestionType: "complete-line",
+      fileName: "src/App.tsx",
+    },
+    "Protected code completion API"
+  );
+  await assertProtectedJson401(
+    "GET",
+    "/api/template/smoke-playground",
+    undefined,
+    "Protected template API"
+  );
+  await assertProtectedJson401(
+    "POST",
     "/api/plan",
     {
       intent: "rename a variable",
       activeFile: "src/App.tsx",
       dirtyFiles: [],
     },
-    (response, body) => {
-      const parsed = JSON.parse(body);
-      return response.status === 401 && parsed.error === "Unauthorized";
-    },
     "Protected plan API"
   );
-  await assertJsonPost(
+  await assertProtectedJson401(
+    "POST",
     "/api/patch",
     {
       intent: "rename a variable",
@@ -160,20 +213,13 @@ try {
       dirtyFiles: [],
       selectedStepIds: ["draft-small-patch"],
     },
-    (response, body) => {
-      const parsed = JSON.parse(body);
-      return response.status === 401 && parsed.error === "Unauthorized";
-    },
     "Protected patch API"
   );
-  await assertJsonPost(
+  await assertProtectedJson401(
+    "POST",
     "/api/verify",
     {
       commands: ["npm run lint", "rm -rf ."],
-    },
-    (response, body) => {
-      const parsed = JSON.parse(body);
-      return response.status === 401 && parsed.error === "Unauthorized";
     },
     "Protected verify API"
   );
