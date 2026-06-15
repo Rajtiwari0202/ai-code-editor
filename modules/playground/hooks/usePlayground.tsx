@@ -108,7 +108,6 @@ export const usePlayground = (id: string): UsePlaygroundReturn => {
       try {
         await savePlaygroundFiles(id, data);
         setTemplateData(data);
-        toast.success("Changes saved successfully");
       } catch (error) {
         console.error("Error saving template data:", error);
         toast.error("Failed to save changes");
