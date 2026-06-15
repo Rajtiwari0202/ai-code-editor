@@ -39,6 +39,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
 import "katex/dist/katex.min.css";
@@ -677,25 +682,27 @@ export function AIChatSidePanel({ isOpen, onClose }: AIChatSidePanelProps) {
                 onChange={(event) => setInput(event.target.value)}
                 onKeyDown={handleInputKeyDown}
                 disabled={isLoading}
-                className="max-h-40 min-h-12 resize-none border-zinc-800 bg-zinc-900 pr-24 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-blue-500/30"
+                className="max-h-40 min-h-12 resize-none border-zinc-800 bg-zinc-900 text-zinc-100 placeholder:text-zinc-500 focus-visible:ring-blue-500/30"
                 rows={1}
               />
-              <kbd className="absolute bottom-3 right-3 hidden rounded border border-zinc-700 bg-zinc-800 px-1.5 py-0.5 text-xs text-zinc-500 sm:inline-block">
-                Ctrl+Enter
-              </kbd>
             </div>
-            <Button
-              type="submit"
-              disabled={isLoading || !input.trim()}
-              className="h-12 px-4"
-              aria-label="Send message"
-            >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  type="submit"
+                  disabled={isLoading || !input.trim()}
+                  className="h-12 px-4"
+                  aria-label="Send message"
+                >
+                  {isLoading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Send message</TooltipContent>
+            </Tooltip>
           </div>
         </form>
       </aside>
