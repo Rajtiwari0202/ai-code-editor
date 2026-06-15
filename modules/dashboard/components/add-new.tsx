@@ -7,16 +7,13 @@ import { useState } from "react";
 import { toast } from "sonner";
 import TemplateSelectingModal from "./template-selecting-modal";
 import { createPlayground } from "../actions";
+import type { CreatePlaygroundInput } from "../contracts";
 
 const AddNewButton = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const router = useRouter();
 
-  const handleSubmit = async (data: {
-    title: string;
-    template: "REACT" | "NEXTJS" | "EXPRESS" | "VUE" | "HONO" | "ANGULAR";
-    description?: string;
-  }) => {
+  const handleSubmit = async (data: CreatePlaygroundInput) => {
     try {
       const res = await createPlayground(data);
 

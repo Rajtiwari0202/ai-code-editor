@@ -1,3 +1,5 @@
+import type { PlaygroundTemplate } from "./contracts";
+
 export interface User {
   id: string;
   name: string | null;
@@ -12,7 +14,7 @@ export interface Project {
   id: string;
   title: string;
   description: string | null;
-  template: "REACT" | "NEXTJS" | "EXPRESS" | "VUE" | "HONO" | "ANGULAR";
+  template: PlaygroundTemplate;
   createdAt: Date;
   updatedAt: Date;
   userId: string;

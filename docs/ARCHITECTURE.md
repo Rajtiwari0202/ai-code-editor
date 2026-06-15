@@ -95,6 +95,7 @@ Forge Editor should keep AI actions reviewable:
 - OAuth account persistence should stay adapter-owned; avoid manually linking accounts by matching email addresses outside an authenticated session.
 - WebContainer execution is browser-contained and should not be treated as host shell access.
 - Playground reads and mutations are scoped to the authenticated owner before loading templates, saving files, editing metadata, deleting, duplicating, or toggling favorites.
+- Dashboard project metadata is trimmed and validated in server actions before writes reach Prisma.
 - Future host-file access must run through a local agent with user approval.
 - Destructive project actions should keep confirmation dialogs.
 - API routes should validate request payloads before calling provider or database code.

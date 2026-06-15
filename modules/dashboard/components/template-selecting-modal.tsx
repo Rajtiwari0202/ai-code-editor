@@ -26,16 +26,16 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
+import type {
+  CreatePlaygroundInput,
+  PlaygroundTemplate,
+} from "../contracts";
 
 // TemplateSelectionModal.tsx
 type TemplateSelectionModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (data: {
-    title: string;
-    template: "REACT" | "NEXTJS" | "EXPRESS" | "VUE" | "HONO" | "ANGULAR";
-    description?: string;
-  }) => Promise<void> | void;
+  onSubmit: (data: CreatePlaygroundInput) => Promise<void> | void;
 };
 
 interface TemplateOption {
@@ -182,10 +182,7 @@ const TemplateSelectionModal = ({
 
   const handleCreateProject = async () => {
     if (selectedTemplate) {
-      const templateMap: Record<
-        string,
-        "REACT" | "NEXTJS" | "EXPRESS" | "VUE" | "HONO" | "ANGULAR"
-      > = {
+      const templateMap: Record<string, PlaygroundTemplate> = {
         react: "REACT",
         nextjs: "NEXTJS",
         express: "EXPRESS",

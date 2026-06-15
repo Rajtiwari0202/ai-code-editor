@@ -4,6 +4,13 @@ import { db } from "@/lib/db";
 import { currentUser } from "@/modules/auth/actions";
 import { revalidatePath } from "next/cache";
 import type { Prisma } from "@prisma/client";
+import {
+  createPlaygroundSchema,
+  editProjectSchema,
+  projectIdSchema,
+  type CreatePlaygroundInput,
+  type EditProjectInput,
+} from "../contracts";
 
 async function requireCurrentUserId() {
   const user = await currentUser();
@@ -23,9 +30,11 @@ export const togglePlaygroundStar = async (
   const userId = await requireCurrentUserId();
 
   try {
+    const projectId = projectIdSchema.parse(playgroundId);
+
     const playground = await db.playground.findFirst({
       where: {
-        id: playgroundId,
+        id: projectId,
         userId,
       },
       select: {
@@ -42,7 +51,7 @@ export const togglePlaygroundStar = async (
         where: {
           userId_playgroundId: {
             userId,
-            playgroundId,
+            playgroundId: projectId,
           },
         },
         update: {
@@ -50,7 +59,7 @@ export const togglePlaygroundStar = async (
         },
         create: {
           userId,
-          playgroundId,
+          playgroundId: projectId,
           isMarked: true,
         },
       });
@@ -58,7 +67,7 @@ export const togglePlaygroundStar = async (
       await db.starMark.deleteMany({
         where: {
           userId,
-          playgroundId,
+          playgroundId: projectId,
         },
       });
     }
@@ -104,20 +113,16 @@ export const getAllPlaygroundForUser = async () => {
   }
 };
 
-export const createPlayground = async (data: {
-  title: string;
-  template: "REACT" | "NEXTJS" | "EXPRESS" | "VUE" | "HONO" | "ANGULAR";
-  description?: string;
-}) => {
+export const createPlayground = async (data: CreatePlaygroundInput) => {
   const userId = await requireCurrentUserId();
 
-  const { template, title, description } = data;
-
   try {
+    const { template, title, description } = createPlaygroundSchema.parse(data);
+
     const playground = await db.playground.create({
       data: {
         title,
-        description,
+        description: description ?? null,
         template,
         userId,
       },
@@ -134,9 +139,11 @@ export const deleteProjectById = async (id: string) => {
   const userId = await requireCurrentUserId();
 
   try {
+    const projectId = projectIdSchema.parse(id);
+
     const result = await db.playground.deleteMany({
       where: {
-        id,
+        id: projectId,
         userId,
       },
     });
@@ -154,17 +161,20 @@ export const deleteProjectById = async (id: string) => {
 
 export const editProjectById = async (
   id: string,
-  data: { title: string; description: string }
+  data: EditProjectInput
 ) => {
   const userId = await requireCurrentUserId();
 
   try {
+    const projectId = projectIdSchema.parse(id);
+    const parsedData = editProjectSchema.parse(data);
+
     const result = await db.playground.updateMany({
       where: {
-        id,
+        id: projectId,
         userId,
       },
-      data: data,
+      data: parsedData,
     });
 
     if (result.count === 0) {
@@ -182,9 +192,11 @@ export const duplicateProjectById = async (id: string) => {
   const userId = await requireCurrentUserId();
 
   try {
+    const projectId = projectIdSchema.parse(id);
+
     const originalPlayground = await db.playground.findFirst({
       where: {
-        id,
+        id: projectId,
         userId,
       },
       include: {
