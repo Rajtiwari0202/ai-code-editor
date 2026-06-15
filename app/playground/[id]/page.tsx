@@ -287,7 +287,7 @@ const MainPlaygroundPage = () => {
     ]
   );
 
-    const handleSaveAll = async () => {
+  const handleSaveAll = useCallback(async () => {
     const unsavedFiles = openFiles.filter((f) => f.hasUnsavedChanges);
 
     if (unsavedFiles.length === 0) {
@@ -301,19 +301,27 @@ const MainPlaygroundPage = () => {
     } catch {
       toast.error("Failed to save some files");
     }
-  };
+  }, [handleSave, openFiles]);
 
 
-  useEffect(()=>{
-    const handleKeyDown = (e:KeyboardEvent)=>{
-      if(e.ctrlKey && e.key === "s"){
-        e.preventDefault()
-        handleSave()
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isSaveShortcut =
+        (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s";
+
+      if (isSaveShortcut) {
+        e.preventDefault();
+        if (e.shiftKey) {
+          void handleSaveAll();
+          return;
+        }
+
+        void handleSave();
       }
-    }
-     window.addEventListener("keydown", handleKeyDown);
-     return () => window.removeEventListener("keydown", handleKeyDown);
-  },[handleSave]);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [handleSave, handleSaveAll]);
 
   if (error) {
     return (
@@ -418,7 +426,7 @@ const MainPlaygroundPage = () => {
                       <Save className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Save (Ctrl+S)</TooltipContent>
+                  <TooltipContent>Save (Ctrl/Cmd+S)</TooltipContent>
                 </Tooltip>
 
                 <Tooltip>
@@ -432,7 +440,7 @@ const MainPlaygroundPage = () => {
                       <Save className="h-4 w-4" /> All
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent>Save All (Ctrl+Shift+S)</TooltipContent>
+                  <TooltipContent>Save All (Ctrl/Cmd+Shift+S)</TooltipContent>
                 </Tooltip>
 
                <ToggleAI
