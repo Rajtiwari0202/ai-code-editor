@@ -140,6 +140,7 @@ npm run start    # Start production server
 npm run smoke:prod  # Boot the production server and smoke test public routes, protected API auth, and isolation headers
 npm run validate:env  # Check required deployment environment variables
 npm run validate:templates  # Check bundled starter template contract
+npm run verify:release  # Run the complete local deployment gate
 ```
 
 GitHub Actions runs the same release gates on `main` and pull requests.

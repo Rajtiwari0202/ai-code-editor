@@ -6,6 +6,12 @@ Forge Editor is a Next.js app with authentication, Prisma, WebContainers, and AI
 
 ```bash
 npm install
+npm run verify:release
+```
+
+Or run the same gates one by one:
+
+```bash
 npm run validate:env
 npm run validate:templates
 npm run lint
