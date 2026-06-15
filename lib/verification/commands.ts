@@ -1,8 +1,11 @@
 const commandAllowlist = [
   "npm run validate:env",
+  "npm run validate:docs",
   "npm run validate:templates",
   "npm run lint",
   "npm run build",
+  "npm run smoke:prod",
+  "npm run verify:release",
 ] as const
 
 export const allowedVerificationCommands = [...commandAllowlist]
