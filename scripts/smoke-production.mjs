@@ -167,6 +167,22 @@ try {
     (body) => body.includes("Privacy Policy"),
     "Privacy route"
   );
+  await assertRoute(
+    "/robots.txt",
+    (body) =>
+      body.includes("Sitemap:") &&
+      body.includes("/sitemap.xml") &&
+      body.includes("Disallow: /dashboard"),
+    "Robots route"
+  );
+  await assertRoute(
+    "/sitemap.xml",
+    (body) =>
+      body.includes(`${baseUrl}/`) &&
+      body.includes(`${baseUrl}/terms`) &&
+      body.includes(`${baseUrl}/privacy`),
+    "Sitemap route"
+  );
   await assertProtectedJson401(
     "POST",
     "/api/chat",

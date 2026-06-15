@@ -5,6 +5,7 @@ import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "@/components/providers/theme-providers";
 import { Toaster } from "@/components/ui/sonner";
+import { getSiteUrl } from "@/lib/site-url";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -17,9 +18,58 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Forge Editor",
+  metadataBase: new URL(getSiteUrl()),
+  applicationName: "Forge Editor",
+  title: {
+    default: "Forge Editor",
+    template: "%s | Forge Editor",
+  },
   description:
-    "A browser-based AI code editor with Monaco, WebContainers, project templates, authentication, and local AI assistance.",
+    "A browser-based AI code editor with Monaco, WebContainers, project templates, authentication, and server-side AI assistance.",
+  keywords: [
+    "AI code editor",
+    "browser IDE",
+    "Monaco Editor",
+    "WebContainers",
+    "Next.js",
+    "developer tools",
+  ],
+  authors: [{ name: "Raj Tiwari" }],
+  creator: "Raj Tiwari",
+  publisher: "Forge Editor",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    title: "Forge Editor",
+    description:
+      "Create, edit, run, preview, and review projects from a browser-based AI code editor.",
+    url: "/",
+    siteName: "Forge Editor",
+    type: "website",
+    images: [
+      {
+        url: "/forge-editor-thumbnail.svg",
+        width: 1660,
+        height: 929,
+        alt: "Forge Editor workspace preview",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Forge Editor",
+    description:
+      "A browser-based AI code editor with Monaco, WebContainers, and reviewable AI workflows.",
+    images: ["/forge-editor-thumbnail.svg"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
 };
 
 export default function RootLayout({

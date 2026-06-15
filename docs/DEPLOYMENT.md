@@ -20,7 +20,7 @@ npm run build
 npm run smoke:prod
 ```
 
-The validation, lint, build, and production smoke command should complete before deployment. `npm run smoke:prod` starts the built server, checks `/`, `/api/health`, `/terms`, `/privacy`, verifies protected API routes return JSON `401` responses for unauthenticated requests, verifies the cross-origin isolation headers required by WebContainers, then shuts the server down.
+The validation, lint, build, and production smoke command should complete before deployment. `npm run smoke:prod` starts the built server, checks `/`, `/api/health`, `/terms`, `/privacy`, `/robots.txt`, `/sitemap.xml`, verifies protected API routes return JSON `401` responses for unauthenticated requests, verifies the cross-origin isolation headers required by WebContainers, then shuts the server down.
 `npm run validate:env` reads values from the shell, `.env`, and `.env.local`; shell-provided host values take precedence.
 
 ## Environment Variables
@@ -35,9 +35,11 @@ AUTH_GITHUB_ID=
 AUTH_GITHUB_SECRET=
 DATABASE_URL=
 NEXTAUTH_URL=
+NEXT_PUBLIC_SITE_URL=
 ```
 
 Use the production URL for `NEXTAUTH_URL` after deployment.
+Set `NEXT_PUBLIC_SITE_URL` to the deployed public origin when it differs from `NEXTAUTH_URL`; it is used for canonical metadata, `robots.txt`, and `sitemap.xml`.
 
 Choose one AI provider posture per environment. For local/default AI:
 
@@ -106,6 +108,7 @@ The browser boot path also checks `window.crossOriginIsolated` before starting t
 ## Health Check
 
 `GET /api/health` is public and returns a small JSON payload with `service`, `status`, and `timestamp`. Use it for deployment smoke checks and uptime monitoring.
+Public metadata, `robots.txt`, and `sitemap.xml` derive their origin from `NEXT_PUBLIC_SITE_URL`, `NEXTAUTH_URL`, `AUTH_URL`, or `VERCEL_URL` in that order.
 
 ## Release Checklist
 

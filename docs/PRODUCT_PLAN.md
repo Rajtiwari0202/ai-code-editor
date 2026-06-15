@@ -21,7 +21,7 @@ Status: in progress.
 - Improve playground first-load UX while WebContainers boot. Started.
 - Make AI chat states explicit: idle, thinking, provider unavailable, and filtered empty states. Complete.
 - Tighten responsive behavior for dashboard and playground.
-- Replace broken template/image references and add final Open Graph metadata. Template/image references complete.
+- Replace broken template/image references and add final Open Graph metadata. Complete.
 - Keep bundled starters runnable through `npm run start`. Complete for React, Next.js, Express, Hono, Vue, and Angular.
 - Add a template validation command. Complete.
 - Scope playground mutations to the authenticated owner. Complete.

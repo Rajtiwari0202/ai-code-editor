@@ -84,6 +84,7 @@ AUTH_GITHUB_ID=
 AUTH_GITHUB_SECRET=
 DATABASE_URL=
 NEXTAUTH_URL=http://localhost:3000
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
 ```
 
 Then choose the AI provider posture for your environment:
@@ -137,7 +138,7 @@ npm run dev      # Start development server
 npm run lint     # Run ESLint
 npm run build    # Build for production
 npm run start    # Start production server
-npm run smoke:prod  # Boot the production server and smoke test public routes, protected API auth, and isolation headers
+npm run smoke:prod  # Boot the production server and smoke test public/metadata routes, protected API auth, and isolation headers
 npm run validate:env  # Check required environment variables from the shell, .env, or .env.local
 npm run validate:env:strict  # Check production-shaped environment values
 npm run validate:templates  # Check bundled starter template contract
