@@ -2,6 +2,7 @@ const commandAllowlist = [
   "npm run validate:env",
   "npm run validate:docs",
   "npm run validate:templates",
+  "npm run audit:prod",
   "npm run lint",
   "npm run build",
   "npm run smoke:prod",

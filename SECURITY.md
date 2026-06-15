@@ -33,4 +33,4 @@ Before release, run:
 npm run verify:release
 ```
 
-The production smoke test verifies public routes, protected API auth behavior, and the cross-origin isolation headers required by WebContainers.
+The release verifier includes dependency audit, public routes, protected API auth behavior, and the cross-origin isolation headers required by WebContainers.
