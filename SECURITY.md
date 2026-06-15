@@ -34,3 +34,7 @@ npm run verify:release
 ```
 
 The release verifier includes dependency audit, public routes, protected API auth behavior, and the cross-origin isolation headers required by WebContainers.
+
+## Dependency Updates
+
+Dependabot is configured for npm and GitHub Actions updates. Security fixes that resolve high or critical production dependency advisories should be prioritized before release. Major framework upgrades, especially Next.js and Prisma, should be handled as planned migrations with release verification and rollback notes.

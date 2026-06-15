@@ -37,6 +37,14 @@ Minimum checks for launch:
 - AI provider requests track rate limits and server-side failures.
 - WebContainer pages keep the `Cross-Origin-Opener-Policy` and `Cross-Origin-Embedder-Policy` headers.
 
+## Dependency Maintenance
+
+- Dependabot opens weekly npm update pull requests and monthly GitHub Actions update pull requests.
+- Patch and minor dependency updates should pass CI before merge.
+- Major upgrades for Next.js and Prisma are intentionally not automatic; plan them as explicit migration work with release notes and rollback notes.
+- When `npm run audit:prod` reports high or critical production advisories, treat the fix as release-blocking.
+- Track remaining moderate advisories in the release notes or a follow-up issue when the safe fix path requires a major framework migration.
+
 ## Incident Response
 
 For an outage or severe regression:
