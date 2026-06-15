@@ -164,13 +164,13 @@ export const PlaygroundEditor = ({
       return false
     }
 
-    // CRITICAL: Prevent double acceptance with immediate flag setting
+    // Prevent repeated Tab events from applying the same suggestion twice.
     if (isAcceptingSuggestionRef.current || suggestionAcceptedRef.current) {
       traceSuggestion("BLOCKED: Already accepting/accepted suggestion, skipping")
       return false
     }
 
-    // Set flags IMMEDIATELY to prevent any race conditions
+    // Set flags before touching the editor so Monaco cannot process a duplicate accept.
     isAcceptingSuggestionRef.current = true
     suggestionAcceptedRef.current = true
 
@@ -249,7 +249,7 @@ export const PlaygroundEditor = ({
       setTimeout(() => {
         suggestionAcceptedRef.current = false
         traceSuggestion("Reset suggestionAcceptedRef flag")
-      }, 1000) // Increased delay to 1 second
+      }, 1000)
     }
   }, [clearCurrentSuggestion, onAcceptSuggestion])
 
@@ -374,7 +374,7 @@ export const PlaygroundEditor = ({
       onTriggerSuggestion("completion", editor)
     })
 
-    // CRITICAL: Override Tab key with high priority and prevent default Monaco behavior
+    // Override Tab only while a matching inline suggestion is active.
     tabCommandRef.current = editor.addCommand(
       monaco.KeyCode.Tab,
       () => {
@@ -385,13 +385,13 @@ export const PlaygroundEditor = ({
           suggestionAccepted: suggestionAcceptedRef.current,
         })
 
-        // CRITICAL: Block if already processing
+        // Ignore repeated Tab while acceptance is already in flight.
         if (isAcceptingSuggestionRef.current) {
           traceSuggestion("BLOCKED: Already in the process of accepting, ignoring Tab")
           return
         }
 
-        // CRITICAL: Block if just accepted
+        // Let Monaco handle Tab normally right after accepting a suggestion.
         if (suggestionAcceptedRef.current) {
           traceSuggestion("BLOCKED: Suggestion was just accepted, using default tab")
           editor.trigger("keyboard", "tab", null)
@@ -404,7 +404,7 @@ export const PlaygroundEditor = ({
           const accepted = acceptCurrentSuggestion()
           if (accepted) {
             traceSuggestion("SUCCESS: Suggestion accepted via Tab, preventing default behavior")
-            return // CRITICAL: Return here to prevent default tab behavior
+            return
           }
           traceSuggestion("FAILED: Suggestion acceptance failed, falling through to default")
         }
@@ -413,7 +413,7 @@ export const PlaygroundEditor = ({
         traceSuggestion("DEFAULT: Using default tab behavior")
         editor.trigger("keyboard", "tab", null)
       },
-      // CRITICAL: Use specific context to override Monaco's built-in Tab handling
+      // Keep the override limited to focused editable text.
       "editorTextFocus && !editorReadonly && !suggestWidgetVisible",
     )
 
@@ -448,7 +448,7 @@ export const PlaygroundEditor = ({
         }
       }
 
-      // Trigger new suggestion if appropriate (simplified)
+      // Trigger a new suggestion after the cursor settles.
       if (!currentSuggestionRef.current && !suggestionLoading) {
         // Clear any existing timeout
         if (suggestionTimeoutRef.current) {

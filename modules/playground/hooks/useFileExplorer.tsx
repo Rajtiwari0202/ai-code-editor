@@ -57,14 +57,12 @@ interface FileExplorerState {
   activeFileId: string | null;
   editorContent: string;
 
-  //   Setter Functions
   setPlaygroundId: (id: string) => void;
   setTemplateData: (data: TemplateFolder | null) => void;
   setEditorContent: (content: string) => void;
   setOpenFiles: (files: OpenFile[]) => void;
   setActiveFileId: (fileId: string | null) => void;
 
-  //   Functions
   openFile: (file: TemplateFile, filePath?: string) => void;
   closeFile: (fileId: string) => void;
   closeAllFiles: () => void;
@@ -216,7 +214,6 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
       set({ templateData: updatedTemplateData });
       toast.success(`Created file: ${fileName}`);
 
-      // Use the passed saveTemplateData function
       await saveTemplateData(updatedTemplateData);
 
       // Sync with web container
@@ -253,7 +250,6 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
       set({ templateData: updatedTemplateData });
       toast.success(`Created folder: ${newFolder.folderName}`);
 
-      // Use the passed saveTemplateData function
       await saveTemplateData(updatedTemplateData);
 
       // Sync with web container
@@ -306,7 +302,6 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
 
       set({ templateData: updatedTemplateData });
 
-      // Use the passed saveTemplateData function
       await saveTemplateData(updatedTemplateData);
       toast.success(`Deleted file: ${file.filename}.${file.fileExtension}`);
     } catch (error) {
@@ -350,7 +345,6 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
 
       set({ templateData: updatedTemplateData });
 
-      // Use the passed saveTemplateData function
       await saveTemplateData(updatedTemplateData);
       toast.success(`Deleted folder: ${folder.folderName}`);
     } catch (error) {
@@ -431,7 +425,6 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
           activeFileId: activeFileId === oldFileId ? newFileId : activeFileId,
         });
 
-        // Use the passed saveTemplateData function
         await saveTemplateData(updatedTemplateData);
         toast.success(`Renamed file to: ${newFilename}.${newExtension}`);
       }
@@ -504,7 +497,6 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
           activeFileId: updatedActiveFileId,
         });
 
-        // Use the passed saveTemplateData function
         await saveTemplateData(updatedTemplateData);
         toast.success(`Renamed folder to: ${newFolderName}`);
       }

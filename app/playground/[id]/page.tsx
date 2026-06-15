@@ -110,7 +110,6 @@ const MainPlaygroundPage = () => {
     }
   }, [templateData, setTemplateData, openFiles.length]);
 
-  // Create wrapper functions that pass saveTemplateData
   const wrappedHandleAddFile = useCallback(
     (newFile: TemplateFile, parentPath: string) => {
       return handleAddFile(
@@ -341,7 +340,6 @@ const MainPlaygroundPage = () => {
     );
   }
 
-  // Loading state
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-4">
@@ -367,7 +365,6 @@ const MainPlaygroundPage = () => {
     );
   }
 
-  // No template data
   if (!templateData) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-4">
