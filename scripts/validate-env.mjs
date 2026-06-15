@@ -104,6 +104,10 @@ if (missing.length > 0) {
 }
 
 const nextAuthUrl = validateUrl("NEXTAUTH_URL", ["http:", "https:"]);
+const nextPublicSiteUrl = validateUrl("NEXT_PUBLIC_SITE_URL", [
+  "http:",
+  "https:",
+]);
 validateUrl("DATABASE_URL", ["mongodb:", "mongodb+srv:"]);
 
 const aiProvider = (readEnv("AI_PROVIDER") || "ollama").toLowerCase();
@@ -148,6 +152,16 @@ if (strictMode) {
 
     if (isLocalHost(nextAuthUrl.hostname)) {
       addError("NEXTAUTH_URL must not point to localhost in strict mode.");
+    }
+  }
+
+  if (nextPublicSiteUrl) {
+    if (nextPublicSiteUrl.protocol !== "https:") {
+      addError("NEXT_PUBLIC_SITE_URL must use https in strict mode.");
+    }
+
+    if (isLocalHost(nextPublicSiteUrl.hostname)) {
+      addError("NEXT_PUBLIC_SITE_URL must not point to localhost in strict mode.");
     }
   }
 

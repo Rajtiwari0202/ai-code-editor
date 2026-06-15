@@ -52,6 +52,7 @@ jobs:
           AI_PROVIDER: openai-compatible
           DATABASE_URL: mongodb+srv://user:pass@cluster.example/forge-ci
           NEXTAUTH_URL: https://forge-ci.example
+          NEXT_PUBLIC_SITE_URL: https://forge-ci.example
           OPENAI_API_KEY: ci_openai_api_key_not_real
           OPENAI_MODEL: ci-openai-model
 
