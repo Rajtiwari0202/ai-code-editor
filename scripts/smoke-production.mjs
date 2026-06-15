@@ -50,6 +50,23 @@ async function assertRoute(path, predicate, label) {
   }
 }
 
+async function assertJsonPost(path, payload, predicate, label) {
+  const response = await fetch(`${baseUrl}${path}`, {
+    method: "POST",
+    cache: "no-store",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  const body = await response.text();
+
+  if (!predicate(response, body)) {
+    throw new Error(`${label} response did not match the expected contract`);
+  }
+}
+
 async function assertIsolationHeaders(path) {
   const response = await fetch(`${baseUrl}${path}`, {
     cache: "no-store",
@@ -77,6 +94,9 @@ const child = spawn(
   {
     env: {
       ...process.env,
+      AUTH_TRUST_HOST: "true",
+      AUTH_URL: baseUrl,
+      NEXTAUTH_URL: baseUrl,
       PORT: String(port),
     },
     stdio: ["ignore", "pipe", "pipe"],
@@ -118,6 +138,44 @@ try {
     "/privacy",
     (body) => body.includes("Privacy Policy"),
     "Privacy route"
+  );
+  await assertJsonPost(
+    "/api/plan",
+    {
+      intent: "rename a variable",
+      activeFile: "src/App.tsx",
+      dirtyFiles: [],
+    },
+    (response, body) => {
+      const parsed = JSON.parse(body);
+      return response.status === 401 && parsed.error === "Unauthorized";
+    },
+    "Protected plan API"
+  );
+  await assertJsonPost(
+    "/api/patch",
+    {
+      intent: "rename a variable",
+      activeFile: "src/App.tsx",
+      dirtyFiles: [],
+      selectedStepIds: ["draft-small-patch"],
+    },
+    (response, body) => {
+      const parsed = JSON.parse(body);
+      return response.status === 401 && parsed.error === "Unauthorized";
+    },
+    "Protected patch API"
+  );
+  await assertJsonPost(
+    "/api/verify",
+    {
+      commands: ["npm run lint", "rm -rf ."],
+    },
+    (response, body) => {
+      const parsed = JSON.parse(body);
+      return response.status === 401 && parsed.error === "Unauthorized";
+    },
+    "Protected verify API"
   );
 
   console.log(`Production smoke passed at ${baseUrl}`);

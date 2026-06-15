@@ -16,6 +16,8 @@ Forge Editor keeps AI behavior reviewable. The current AI routes support chat, c
 
 AI and review workflow routes use shared Zod schemas in `lib/ai/contracts.ts`. Invalid JSON returns `400`, malformed request fields return `400`, and provider failures return graceful errors where a provider call is involved.
 
+These routes are protected by authentication. Unauthenticated API requests return JSON `401` responses instead of page redirects so fetch clients can handle expired sessions cleanly.
+
 ## Provider Behavior
 
 The browser does not choose model credentials directly. Chat and completion requests go through server routes, and the server reads provider configuration from environment variables.
