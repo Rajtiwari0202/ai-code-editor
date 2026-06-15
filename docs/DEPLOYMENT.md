@@ -15,9 +15,9 @@ npm run smoke:prod
 
 The validation, lint, build, and production smoke command should complete before deployment. `npm run smoke:prod` starts the built server, checks `/`, `/api/health`, `/terms`, `/privacy`, verifies protected API routes return JSON `401` responses for unauthenticated requests, verifies the cross-origin isolation headers required by WebContainers, then shuts the server down.
 
-## Required Environment Variables
+## Environment Variables
 
-Create the same values locally in `.env.local` and in the production host:
+Create the same core values locally in `.env.local` and in the production host:
 
 ```text
 AUTH_SECRET=
@@ -27,15 +27,27 @@ AUTH_GITHUB_ID=
 AUTH_GITHUB_SECRET=
 DATABASE_URL=
 NEXTAUTH_URL=
-AI_PROVIDER=
+```
+
+Use the production URL for `NEXTAUTH_URL` after deployment.
+
+Choose one AI provider posture per environment. For local/default AI:
+
+```text
+AI_PROVIDER=ollama
 OLLAMA_BASE_URL=
 OLLAMA_MODEL=
+```
+
+For hosted OpenAI-compatible AI:
+
+```text
+AI_PROVIDER=openai-compatible
 OPENAI_API_KEY=
 OPENAI_BASE_URL=
 OPENAI_MODEL=
 ```
 
-Use the production URL for `NEXTAUTH_URL` after deployment.
 `AI_PROVIDER` defaults to `ollama`. `OLLAMA_BASE_URL` and `OLLAMA_MODEL` have defaults in code, but production AI behavior should be configured deliberately instead of relying on localhost from a hosted environment. For hosted AI, set `AI_PROVIDER=openai-compatible` and provide `OPENAI_API_KEY` plus `OPENAI_MODEL` in the deployment environment. `OPENAI_BASE_URL` defaults to `https://api.openai.com/v1` and can point at any compatible server-side endpoint.
 
 OAuth callback URLs must match the deployed origin exactly:

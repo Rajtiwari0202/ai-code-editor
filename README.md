@@ -74,7 +74,7 @@ Create `.env.local` from the example:
 cp .env.example .env.local
 ```
 
-Fill in the required values:
+Fill in the core required values:
 
 ```env
 AUTH_SECRET=
@@ -84,9 +84,20 @@ AUTH_GITHUB_ID=
 AUTH_GITHUB_SECRET=
 DATABASE_URL=
 NEXTAUTH_URL=http://localhost:3000
+```
+
+Then choose the AI provider posture for your environment:
+
+```env
 AI_PROVIDER=ollama
 OLLAMA_BASE_URL=http://localhost:11434
 OLLAMA_MODEL=codellama:latest
+```
+
+For hosted AI, use the OpenAI-compatible mode instead:
+
+```env
+AI_PROVIDER=openai-compatible
 OPENAI_API_KEY=
 OPENAI_BASE_URL=https://api.openai.com/v1
 OPENAI_MODEL=
