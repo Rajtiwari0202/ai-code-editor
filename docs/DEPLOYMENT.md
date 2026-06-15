@@ -113,7 +113,7 @@ Public metadata, `robots.txt`, and `sitemap.xml` derive their origin from `NEXT_
 
 ## Release Checklist
 
-Use [Release Checklist](./RELEASE_CHECKLIST.md) for the complete handoff list.
+Use [Release Checklist](./RELEASE_CHECKLIST.md) for the complete handoff list and [Operations Runbook](./OPERATIONS.md) for post-deploy ownership, monitoring, rollback, and rotation steps.
 
 - `npm run lint` passes.
 - `npm run build` passes.

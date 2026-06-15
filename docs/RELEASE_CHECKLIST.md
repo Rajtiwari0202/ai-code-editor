@@ -46,4 +46,5 @@ Use this checklist before publishing a production build of Forge Editor.
 
 - Add production screenshots after the hosted URL is live.
 - Choose an open-source license before broad public redistribution.
+- Record the deployed commit, operator, smoke-test result, and rollback plan in the operations runbook.
 - Keep OAuth, database, and AI provider ownership documented for future maintenance.

@@ -30,11 +30,7 @@ Include:
 Before release, run:
 
 ```bash
-npm run validate:env
-npm run validate:templates
-npm run lint
-npm run build
-npm run smoke:prod
+npm run verify:release
 ```
 
 The production smoke test verifies public routes, protected API auth behavior, and the cross-origin isolation headers required by WebContainers.
