@@ -8,6 +8,40 @@ import { generateFileId, getTemplateFileName, joinTemplatePath } from "../lib";
 
 type WebContainerInstance = WebContainer | null;
 
+function getTemplateItemName(item: TemplateFile | TemplateFolder) {
+  return "folderName" in item ? item.folderName : getTemplateFileName(item);
+}
+
+function findFolderByPath(root: TemplateFolder, parentPath: string) {
+  const pathParts = parentPath.split("/").filter(Boolean);
+  let currentFolder = root;
+
+  for (const part of pathParts) {
+    const nextFolder = currentFolder.items.find(
+      (item) => "folderName" in item && item.folderName === part
+    );
+
+    if (!nextFolder || !("folderName" in nextFolder)) {
+      return null;
+    }
+
+    currentFolder = nextFolder;
+  }
+
+  return currentFolder;
+}
+
+function hasNameCollision(
+  folder: TemplateFolder,
+  itemName: string,
+  ignoredIndex?: number
+) {
+  return folder.items.some(
+    (item, index) =>
+      index !== ignoredIndex && getTemplateItemName(item) === itemName
+  );
+}
+
 interface OpenFile extends TemplateFile {
   id: string;
   path: string;
@@ -166,32 +200,32 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
 
     try {
       const updatedTemplateData = JSON.parse(JSON.stringify(templateData)) as TemplateFolder;
-      const pathParts = parentPath.split("/");
-      let currentFolder = updatedTemplateData;
+      const currentFolder = findFolderByPath(updatedTemplateData, parentPath);
+      if (!currentFolder) {
+        toast.error("Parent folder not found");
+        return;
+      }
 
-      for (const part of pathParts) {
-        if (part) {
-          const nextFolder = currentFolder.items.find(
-            (item) => "folderName" in item && item.folderName === part
-          ) as TemplateFolder;
-          if (nextFolder) currentFolder = nextFolder;
-        }
+      const fileName = getTemplateFileName(newFile);
+      if (hasNameCollision(currentFolder, fileName)) {
+        toast.error(`"${fileName}" already exists in this folder`);
+        return;
       }
 
       currentFolder.items.push(newFile);
       set({ templateData: updatedTemplateData });
-      toast.success(`Created file: ${newFile.filename}.${newFile.fileExtension}`);
+      toast.success(`Created file: ${fileName}`);
 
       // Use the passed saveTemplateData function
       await saveTemplateData(updatedTemplateData);
 
       // Sync with web container
       if (writeFileSync) {
-        const filePath = joinTemplatePath(parentPath, getTemplateFileName(newFile));
+        const filePath = joinTemplatePath(parentPath, fileName);
         await writeFileSync(filePath, newFile.content || "");
       }
 
-      get().openFile(newFile, joinTemplatePath(parentPath, getTemplateFileName(newFile)));
+      get().openFile(newFile, joinTemplatePath(parentPath, fileName));
     } catch (error) {
       console.error("Error adding file:", error);
       toast.error("Failed to create file");
@@ -204,16 +238,15 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
 
     try {
       const updatedTemplateData = JSON.parse(JSON.stringify(templateData)) as TemplateFolder;
-      const pathParts = parentPath.split("/");
-      let currentFolder = updatedTemplateData;
+      const currentFolder = findFolderByPath(updatedTemplateData, parentPath);
+      if (!currentFolder) {
+        toast.error("Parent folder not found");
+        return;
+      }
 
-      for (const part of pathParts) {
-        if (part) {
-          const nextFolder = currentFolder.items.find(
-            (item) => "folderName" in item && item.folderName === part
-          ) as TemplateFolder;
-          if (nextFolder) currentFolder = nextFolder;
-        }
+      if (hasNameCollision(currentFolder, newFolder.folderName)) {
+        toast.error(`"${newFolder.folderName}" already exists in this folder`);
+        return;
       }
 
       currentFolder.items.push(newFolder);
@@ -244,16 +277,10 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
       const updatedTemplateData = JSON.parse(
         JSON.stringify(templateData)
       ) as TemplateFolder;
-      const pathParts = parentPath.split("/");
-      let currentFolder = updatedTemplateData;
-
-      for (const part of pathParts) {
-        if (part) {
-          const nextFolder = currentFolder.items.find(
-            (item) => "folderName" in item && item.folderName === part
-          ) as TemplateFolder;
-          if (nextFolder) currentFolder = nextFolder;
-        }
+      const currentFolder = findFolderByPath(updatedTemplateData, parentPath);
+      if (!currentFolder) {
+        toast.error("Parent folder not found");
+        return;
       }
 
       currentFolder.items = currentFolder.items.filter(
@@ -296,16 +323,10 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
       const updatedTemplateData = JSON.parse(
         JSON.stringify(templateData)
       ) as TemplateFolder;
-      const pathParts = parentPath.split("/");
-      let currentFolder = updatedTemplateData;
-
-      for (const part of pathParts) {
-        if (part) {
-          const nextFolder = currentFolder.items.find(
-            (item) => "folderName" in item && item.folderName === part
-          ) as TemplateFolder;
-          if (nextFolder) currentFolder = nextFolder;
-        }
+      const currentFolder = findFolderByPath(updatedTemplateData, parentPath);
+      if (!currentFolder) {
+        toast.error("Parent folder not found");
+        return;
       }
 
       currentFolder.items = currentFolder.items.filter(
@@ -354,16 +375,10 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
       const updatedTemplateData = JSON.parse(
         JSON.stringify(templateData)
       ) as TemplateFolder;
-      const pathParts = parentPath.split("/");
-      let currentFolder = updatedTemplateData;
-
-      for (const part of pathParts) {
-        if (part) {
-          const nextFolder = currentFolder.items.find(
-            (item) => "folderName" in item && item.folderName === part
-          ) as TemplateFolder;
-          if (nextFolder) currentFolder = nextFolder;
-        }
+      const currentFolder = findFolderByPath(updatedTemplateData, parentPath);
+      if (!currentFolder) {
+        toast.error("Parent folder not found");
+        return;
       }
 
       const fileIndex = currentFolder.items.findIndex(
@@ -379,6 +394,13 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
           filename: newFilename,
           fileExtension: newExtension,
         } as TemplateFile;
+        const newFileName = getTemplateFileName(updatedFile);
+
+        if (hasNameCollision(currentFolder, newFileName, fileIndex)) {
+          toast.error(`"${newFileName}" already exists in this folder`);
+          return;
+        }
+
         currentFolder.items[fileIndex] = updatedFile;
 
         if (instance?.fs) {
@@ -430,16 +452,10 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
       const updatedTemplateData = JSON.parse(
         JSON.stringify(templateData)
       ) as TemplateFolder;
-      const pathParts = parentPath.split("/");
-      let currentFolder = updatedTemplateData;
-
-      for (const part of pathParts) {
-        if (part) {
-          const nextFolder = currentFolder.items.find(
-            (item) => "folderName" in item && item.folderName === part
-          ) as TemplateFolder;
-          if (nextFolder) currentFolder = nextFolder;
-        }
+      const currentFolder = findFolderByPath(updatedTemplateData, parentPath);
+      if (!currentFolder) {
+        toast.error("Parent folder not found");
+        return;
       }
 
       const folderIndex = currentFolder.items.findIndex(
@@ -447,6 +463,11 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
       );
 
       if (folderIndex !== -1) {
+        if (hasNameCollision(currentFolder, newFolderName, folderIndex)) {
+          toast.error(`"${newFolderName}" already exists in this folder`);
+          return;
+        }
+
         const updatedFolder = {
           ...currentFolder.items[folderIndex],
           folderName: newFolderName,
