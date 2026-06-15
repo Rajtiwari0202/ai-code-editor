@@ -41,6 +41,20 @@ jobs:
           OPENAI_API_KEY: ci-openai-key
           OPENAI_MODEL: ci-openai-model
 
+      - name: Validate strict deployment environment contract
+        run: npm run validate:env:strict
+        env:
+          AUTH_GITHUB_ID: ci_github_client_id
+          AUTH_GITHUB_SECRET: ci_github_client_secret
+          AUTH_GOOGLE_ID: ci_google_client_id
+          AUTH_GOOGLE_SECRET: ci_google_client_secret
+          AUTH_SECRET: ci-auth-secret-for-strict-env-check-12345
+          AI_PROVIDER: openai-compatible
+          DATABASE_URL: mongodb+srv://user:pass@cluster.example/forge-ci
+          NEXTAUTH_URL: https://forge-ci.example
+          OPENAI_API_KEY: ci_openai_api_key_not_real
+          OPENAI_MODEL: ci-openai-model
+
       - name: Validate starter templates
         run: npm run validate:templates
 

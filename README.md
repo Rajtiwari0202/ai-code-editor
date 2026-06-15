@@ -138,7 +138,8 @@ npm run lint     # Run ESLint
 npm run build    # Build for production
 npm run start    # Start production server
 npm run smoke:prod  # Boot the production server and smoke test public routes, protected API auth, and isolation headers
-npm run validate:env  # Check required deployment environment variables
+npm run validate:env  # Check required environment variables from the shell, .env, or .env.local
+npm run validate:env:strict  # Check production-shaped environment values
 npm run validate:templates  # Check bundled starter template contract
 npm run verify:release  # Run the complete local deployment gate
 ```
