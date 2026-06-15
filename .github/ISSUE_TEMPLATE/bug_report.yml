@@ -1,0 +1,82 @@
+name: Bug Report
+description: Report a reproducible problem in Forge Editor.
+title: "bug: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve Forge Editor. Clear reproduction details make it much easier to fix editor, runtime, auth, and AI workflow issues without guessing.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Product surface
+      description: Where did the issue show up first?
+      options:
+        - Authentication or OAuth
+        - Dashboard and project management
+        - Playground editor
+        - File explorer
+        - WebContainers terminal or preview
+        - AI chat or completion
+        - Project templates
+        - Deployment or CI
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: Share the branch, commit SHA, deployment URL, or local version where you saw this.
+      placeholder: main @ 9000977, local dev, or production URL
+    validations:
+      required: true
+  - type: textarea
+    id: current-behavior
+    attributes:
+      label: Current behavior
+      description: What happened?
+      placeholder: Describe the visible behavior, error message, failed route, or broken workflow.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: Give the shortest reliable path to the problem.
+      placeholder: |
+        1. Sign in with ...
+        2. Create a ... template
+        3. Run ...
+        4. See ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: Expected behavior
+      description: What should Forge Editor do instead?
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Include browser, OS, runtime, provider, and deployment details when relevant.
+      placeholder: Chrome 126, Windows 11, local dev, MongoDB Atlas, Ollama/OpenAI-compatible provider
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or screenshots
+      description: Paste logs, terminal output, network errors, or screenshots. Remove secrets first.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Preflight
+      options:
+        - label: I removed secrets, API keys, OAuth client secrets, and private database URLs.
+          required: true
+        - label: I checked whether the issue already exists.
+          required: true

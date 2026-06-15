@@ -11,6 +11,12 @@ npm run lint
 npm run build
 ```
 
+For release-shaped changes, run the full local gate before opening a pull request:
+
+```bash
+npm run verify:release
+```
+
 ## Code Standards
 
 - Prefer existing UI primitives from `components/ui`.
@@ -38,10 +44,14 @@ Update docs when a change affects:
 - user workflows,
 - or security boundaries.
 
+## Issue Triage
+
+Use the GitHub issue forms for reproducible bugs and product requests. Keep reports tied to a real product surface such as auth, dashboard, playground, WebContainers, AI workflows, templates, deployment, or documentation.
+
 ## Pull Request Checklist
 
 - Describe the user-facing change.
 - Note architectural impact, if any.
-- Run lint and build.
+- Run the relevant validation scripts, and prefer `npm run verify:release` before merge.
 - Include screenshots for visual changes.
 - Document known risks or follow-up work.

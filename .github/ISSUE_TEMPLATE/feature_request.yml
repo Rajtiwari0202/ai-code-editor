@@ -1,0 +1,72 @@
+name: Feature Request
+description: Propose a product improvement for Forge Editor.
+title: "feat: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Good feature requests explain the developer workflow first. Focus on what the user should be able to do, then the implementation can stay grounded.
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Product surface
+      description: Which part of Forge Editor would this improve?
+      options:
+        - Authentication or onboarding
+        - Dashboard and project management
+        - Playground editor
+        - File explorer
+        - WebContainers terminal or preview
+        - AI chat or completion
+        - Patch planning or verification
+        - Project templates
+        - Deployment or operations
+        - Documentation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What user problem or workflow gap should this solve?
+      placeholder: As a developer using Forge Editor, I need ...
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: Describe the smallest useful version of the feature.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: List the observable behaviors that would make this complete.
+      placeholder: |
+        - The user can ...
+        - The system prevents ...
+        - The UI shows ...
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Note simpler options, existing tools, or reasons not to build this yet.
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risks and constraints
+      description: Mention security, AI provider cost, WebContainer compatibility, OAuth, database, or deployment concerns.
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Preflight
+      options:
+        - label: This request is framed around a user workflow, not only an implementation detail.
+          required: true
+        - label: I checked whether a similar request already exists.
+          required: true
