@@ -7,6 +7,7 @@ Use this checklist before publishing a production build of Forge Editor.
 - `npm run verify:release` passes locally with production-like environment values.
 - `npm run validate:env` passes with production-like environment values.
 - `npm run validate:env:strict` passes in the production host environment before launch.
+- `npm run validate:docs` passes.
 - `npm run validate:templates` passes.
 - `npm run lint` passes.
 - `npm run build` passes.

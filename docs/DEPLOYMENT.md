@@ -14,6 +14,7 @@ Or run the same gates one by one:
 
 ```bash
 npm run validate:env
+npm run validate:docs
 npm run validate:templates
 npm run lint
 npm run build

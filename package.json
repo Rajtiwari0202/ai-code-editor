@@ -10,8 +10,9 @@
     "smoke:prod": "node scripts/smoke-production.mjs",
     "validate:env": "node scripts/validate-env.mjs",
     "validate:env:strict": "node scripts/validate-env.mjs --strict",
+    "validate:docs": "node scripts/validate-docs.mjs",
     "validate:templates": "node scripts/validate-templates.mjs",
-    "verify:release": "npm run validate:env && npm run validate:templates && npm run lint && npm run build && npm run smoke:prod",
+    "verify:release": "npm run validate:env && npm run validate:docs && npm run validate:templates && npm run lint && npm run build && npm run smoke:prod",
     "postinstall": "prisma generate"
   },
   "dependencies": {

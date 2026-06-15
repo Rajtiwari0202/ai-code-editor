@@ -55,6 +55,9 @@ jobs:
           OPENAI_API_KEY: ci_openai_api_key_not_real
           OPENAI_MODEL: ci-openai-model
 
+      - name: Validate documentation links
+        run: npm run validate:docs
+
       - name: Validate starter templates
         run: npm run validate:templates
 
