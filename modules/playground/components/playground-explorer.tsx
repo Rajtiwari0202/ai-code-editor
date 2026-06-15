@@ -62,6 +62,12 @@ interface TemplateFolder {
 
 type TemplateItem = TemplateFile | TemplateFolder;
 
+const getTemplateItemName = (item: TemplateItem) =>
+  "folderName" in item ? item.folderName : getTemplateFileName(item);
+
+const getTemplateItemPath = (parentPath: string, item: TemplateItem) =>
+  joinTemplatePath(parentPath, getTemplateItemName(item));
+
 interface TemplateFileTreeProps {
   data: TemplateItem;
   onFileSelect?: (file: TemplateFile, filePath: string) => void;
@@ -159,9 +165,9 @@ export function TemplateFileTree({
           <SidebarGroupContent>
             <SidebarMenu>
               {isRootFolder ? (
-                (data as TemplateFolder).items.map((child, index) => (
+                (data as TemplateFolder).items.map((child) => (
                   <TemplateNode
-                    key={index}
+                    key={getTemplateItemPath("", child)}
                     item={child}
                     onFileSelect={onFileSelect}
                     selectedFile={selectedFile}
@@ -459,9 +465,9 @@ function TemplateNode({
 
           <CollapsibleContent>
             <SidebarMenuSub>
-              {folder.items.map((childItem, index) => (
+              {folder.items.map((childItem) => (
                 <TemplateNode
-                  key={index}
+                  key={getTemplateItemPath(currentPath, childItem)}
                   item={childItem}
                   onFileSelect={onFileSelect}
                   selectedFile={selectedFile}
