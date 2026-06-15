@@ -152,6 +152,7 @@ GitHub Actions runs the same release gates on `main` and pull requests.
 - [Release Checklist](./docs/RELEASE_CHECKLIST.md)
 - [Templates](./docs/TEMPLATES.md)
 - [AI Workflows](./docs/AI_WORKFLOWS.md)
+- [Security Policy](./SECURITY.md)
 - [Contributing](./docs/CONTRIBUTING.md)
 - Public pages: [Terms](./app/(root)/terms/page.tsx) and [Privacy](./app/(root)/privacy/page.tsx)
 
