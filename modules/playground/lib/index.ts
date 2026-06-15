@@ -1,5 +1,11 @@
 import { TemplateFile, TemplateFolder } from "./path-to-json";
 
+export const getTemplateFileName = (file: TemplateFile) =>
+  file.fileExtension ? `${file.filename}.${file.fileExtension}` : file.filename;
+
+export const joinTemplatePath = (parentPath: string, itemName: string) =>
+  parentPath ? `${parentPath}/${itemName}` : itemName;
+
 export function findFilePath(
   file: TemplateFile,
   folder: TemplateFolder,
@@ -16,7 +22,7 @@ export function findFilePath(
       ) {
         return [
           ...pathSoFar,
-          item.filename + (item.fileExtension ? "." + item.fileExtension : ""),
+          getTemplateFileName(item),
         ].join("/");
       }
     }
@@ -26,14 +32,15 @@ export function findFilePath(
 
 
 
-export const generateFileId = (file: TemplateFile, rootFolder: TemplateFolder): string => {
-  const path = findFilePath(file, rootFolder)?.replace(/^\/+/, '') || '';
+export const generateFileId = (
+  file: TemplateFile,
+  rootFolder: TemplateFolder
+): string => {
+  const path = findFilePath(file, rootFolder)?.replace(/^\/+/, "") || "";
 
   if (path) {
     return path;
   }
 
-  return file.fileExtension
-    ? `${file.filename}.${file.fileExtension}`
-    : file.filename;
-}
+  return getTemplateFileName(file);
+};

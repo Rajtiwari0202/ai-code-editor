@@ -4,18 +4,13 @@ import type { WebContainer } from "@webcontainer/api";
 
 import type { TemplateFile, TemplateFolder } from "../lib/path-to-json";
 
-import { generateFileId } from "../lib";
+import { generateFileId, getTemplateFileName, joinTemplatePath } from "../lib";
 
 type WebContainerInstance = WebContainer | null;
 
-const getFileName = (file: TemplateFile) =>
-  file.fileExtension ? `${file.filename}.${file.fileExtension}` : file.filename;
-
-const joinPath = (parentPath: string, itemName: string) =>
-  parentPath ? `${parentPath}/${itemName}` : itemName;
-
 interface OpenFile extends TemplateFile {
   id: string;
+  path: string;
   hasUnsavedChanges: boolean;
   content: string;
   originalContent: string;
@@ -36,7 +31,7 @@ interface FileExplorerState {
   setActiveFileId: (fileId: string | null) => void;
 
   //   Functions
-  openFile: (file: TemplateFile) => void;
+  openFile: (file: TemplateFile, filePath?: string) => void;
   closeFile: (fileId: string) => void;
   closeAllFiles: () => void;
 
@@ -102,8 +97,10 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
   setOpenFiles: (files) => set({ openFiles: files }),
   setActiveFileId: (fileId) => set({ activeFileId: fileId }),
 
-  openFile: (file) => {
-    const fileId = generateFileId(file, get().templateData!);
+  openFile: (file, filePath) => {
+    const resolvedPath =
+      filePath?.replace(/^\/+/, "") || generateFileId(file, get().templateData!);
+    const fileId = resolvedPath;
     const { openFiles } = get();
     const existingFile = openFiles.find((f) => f.id === fileId);
 
@@ -115,6 +112,7 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
     const newOpenFile: OpenFile = {
       ...file,
       id: fileId,
+      path: resolvedPath,
       hasUnsavedChanges: false,
       content: file.content || "",
       originalContent: file.content || "",
@@ -189,13 +187,11 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
 
       // Sync with web container
       if (writeFileSync) {
-        const filePath = parentPath
-          ? `${parentPath}/${newFile.filename}.${newFile.fileExtension}`
-          : `${newFile.filename}.${newFile.fileExtension}`;
+        const filePath = joinTemplatePath(parentPath, getTemplateFileName(newFile));
         await writeFileSync(filePath, newFile.content || "");
       }
 
-      get().openFile(newFile);
+      get().openFile(newFile, joinTemplatePath(parentPath, getTemplateFileName(newFile)));
     } catch (error) {
       console.error("Error adding file:", error);
       toast.error("Failed to create file");
@@ -267,9 +263,7 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
           item.fileExtension !== file.fileExtension
       );
 
-      // Find and close the file if it's open
-      // Use the same ID generation logic as in openFile
-      const fileId = generateFileId(file, templateData);
+      const fileId = joinTemplatePath(parentPath, getTemplateFileName(file));
       const openFile = openFiles.find((f) => f.id === fileId);
       
       if (openFile) {
@@ -278,7 +272,7 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
       }
 
       if (instance?.fs) {
-        await instance.fs.rm(joinPath(parentPath, getFileName(file)), {
+        await instance.fs.rm(joinTemplatePath(parentPath, getTemplateFileName(file)), {
           force: true,
         });
       }
@@ -319,24 +313,15 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
           !("folderName" in item) || item.folderName !== folder.folderName
       );
 
-      // Close all files in the deleted folder recursively
-      const closeFilesInFolder = (folder: TemplateFolder, currentPath: string = "") => {
-        folder.items.forEach((item) => {
-          if ("filename" in item) {
-            // Generate the correct file ID using the same logic as openFile
-            const fileId = generateFileId(item, templateData);
-            get().closeFile(fileId);
-          } else if ("folderName" in item) {
-            const newPath = currentPath ? `${currentPath}/${item.folderName}` : item.folderName;
-            closeFilesInFolder(item, newPath);
-          }
-        });
-      };
-      
-      closeFilesInFolder(folder, parentPath ? `${parentPath}/${folder.folderName}` : folder.folderName);
+      const folderPath = joinTemplatePath(parentPath, folder.folderName);
+      const openFilesToClose = get().openFiles.filter((file) =>
+        file.id.startsWith(`${folderPath}/`)
+      );
+
+      openFilesToClose.forEach((file) => get().closeFile(file.id));
 
       if (instance?.fs) {
-        await instance.fs.rm(joinPath(parentPath, folder.folderName), {
+        await instance.fs.rm(joinTemplatePath(parentPath, folder.folderName), {
           force: true,
           recursive: true,
         });
@@ -364,8 +349,7 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
     const { templateData, openFiles, activeFileId } = get();
     if (!templateData) return;
 
-    // Generate old and new file IDs using the same logic as openFile
-    const oldFileId = generateFileId(file, templateData);
+    const oldFileId = joinTemplatePath(parentPath, getTemplateFileName(file));
     try {
       const updatedTemplateData = JSON.parse(
         JSON.stringify(templateData)
@@ -396,14 +380,15 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
           fileExtension: newExtension,
         } as TemplateFile;
         currentFolder.items[fileIndex] = updatedFile;
-        const newFileId = generateFileId(updatedFile, updatedTemplateData);
 
         if (instance?.fs) {
           await instance.fs.rename(
-            joinPath(parentPath, getFileName(file)),
-            joinPath(parentPath, getFileName(updatedFile))
+            joinTemplatePath(parentPath, getTemplateFileName(file)),
+            joinTemplatePath(parentPath, getTemplateFileName(updatedFile))
           );
         }
+
+        const newFileId = joinTemplatePath(parentPath, getTemplateFileName(updatedFile));
 
         // Update open files with new ID and names
         const updatedOpenFiles = openFiles.map((f) =>
@@ -411,6 +396,7 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
             ? {
                 ...f,
                 id: newFileId,
+                path: newFileId,
                 filename: newFilename,
                 fileExtension: newExtension,
               }
@@ -439,6 +425,8 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
     if (!templateData) return;
 
     try {
+      const oldFolderPath = joinTemplatePath(parentPath, folder.folderName);
+      const newFolderPath = joinTemplatePath(parentPath, newFolderName);
       const updatedTemplateData = JSON.parse(
         JSON.stringify(templateData)
       ) as TemplateFolder;
@@ -467,18 +455,27 @@ export const useFileExplorer = create<FileExplorerState>()((set, get) => ({
 
         if (instance?.fs) {
           await instance.fs.rename(
-            joinPath(parentPath, folder.folderName),
-            joinPath(parentPath, newFolderName)
+            oldFolderPath,
+            newFolderPath
           );
         }
 
-        const updatedOpenFiles = openFiles.map((file) => ({
-          ...file,
-          id: generateFileId(file, updatedTemplateData),
-        }));
+        const updatedOpenFiles = openFiles.map((file) => {
+          if (!file.id.startsWith(`${oldFolderPath}/`)) {
+            return file;
+          }
+
+          const nextPath = `${newFolderPath}${file.id.slice(oldFolderPath.length)}`;
+          return {
+            ...file,
+            id: nextPath,
+            path: nextPath,
+          };
+        });
         const updatedActiveFileId =
-          updatedOpenFiles.find((_, index) => openFiles[index]?.id === activeFileId)
-            ?.id || activeFileId;
+          activeFileId?.startsWith(`${oldFolderPath}/`)
+            ? `${newFolderPath}${activeFileId.slice(oldFolderPath.length)}`
+            : activeFileId;
 
         set({
           templateData: updatedTemplateData,

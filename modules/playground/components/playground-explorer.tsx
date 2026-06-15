@@ -46,6 +46,7 @@ import NewFolderDialog from "./dialogs/new-folder-dialog";
 import NewFileDialog from "./dialogs/new-file-dialog";
 import RenameFileDialog from "./dialogs/rename-file-dialog";
 import { DeleteDialog } from "./dialogs/delete-dialog";
+import { getTemplateFileName, joinTemplatePath } from "../lib";
 
 interface TemplateFile {
   filename: string;
@@ -63,8 +64,9 @@ type TemplateItem = TemplateFile | TemplateFolder;
 
 interface TemplateFileTreeProps {
   data: TemplateItem;
-  onFileSelect?: (file: TemplateFile) => void;
+  onFileSelect?: (file: TemplateFile, filePath: string) => void;
   selectedFile?: TemplateFile;
+  selectedFilePath?: string;
   title?: string;
   onAddFile?: (file: TemplateFile, parentPath: string) => void;
   onAddFolder?: (folder: TemplateFolder, parentPath: string) => void;
@@ -87,6 +89,7 @@ export function TemplateFileTree({
   data,
   onFileSelect,
   selectedFile,
+  selectedFilePath,
   title = "Files Explorer",
   onAddFile,
   onAddFolder,
@@ -162,6 +165,7 @@ export function TemplateFileTree({
                     item={child}
                     onFileSelect={onFileSelect}
                     selectedFile={selectedFile}
+                    selectedFilePath={selectedFilePath}
                     level={0}
                     path=""
                     onAddFile={onAddFile}
@@ -177,6 +181,7 @@ export function TemplateFileTree({
                   item={data}
                   onFileSelect={onFileSelect}
                   selectedFile={selectedFile}
+                  selectedFilePath={selectedFilePath}
                   level={0}
                   path=""
                   onAddFile={onAddFile}
@@ -210,8 +215,9 @@ export function TemplateFileTree({
 
 interface TemplateNodeProps {
   item: TemplateItem;
-  onFileSelect?: (file: TemplateFile) => void;
+  onFileSelect?: (file: TemplateFile, filePath: string) => void;
   selectedFile?: TemplateFile;
+  selectedFilePath?: string;
   level: number;
   path?: string;
   onAddFile?: (file: TemplateFile, parentPath: string) => void;
@@ -235,6 +241,7 @@ function TemplateNode({
   item,
   onFileSelect,
   selectedFile,
+  selectedFilePath,
   level,
   path = "",
   onAddFile,
@@ -257,12 +264,15 @@ function TemplateNode({
 
   if (!isFolder) {
     const file = item as TemplateFile;
-    const fileName = `${file.filename}.${file.fileExtension}`;
+    const fileName = getTemplateFileName(file);
+    const filePath = joinTemplatePath(path, fileName);
 
     const isSelected =
-      selectedFile &&
-      selectedFile.filename === file.filename &&
-      selectedFile.fileExtension === file.fileExtension;
+      selectedFilePath === filePath ||
+      (!selectedFilePath &&
+        selectedFile &&
+        selectedFile.filename === file.filename &&
+        selectedFile.fileExtension === file.fileExtension);
 
     const handleRename = () => {
       setIsRenameDialogOpen(true);
@@ -287,7 +297,7 @@ function TemplateNode({
         <div className="flex items-center group">
           <SidebarMenuButton
             isActive={isSelected}
-            onClick={() => onFileSelect?.(file)}
+            onClick={() => onFileSelect?.(file, filePath)}
             className="flex-1"
           >
             <File className="h-4 w-4 mr-2 shrink-0" />
@@ -455,6 +465,7 @@ function TemplateNode({
                   item={childItem}
                   onFileSelect={onFileSelect}
                   selectedFile={selectedFile}
+                  selectedFilePath={selectedFilePath}
                   level={level + 1}
                   path={currentPath}
                   onAddFile={onAddFile}

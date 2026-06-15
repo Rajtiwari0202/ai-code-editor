@@ -71,7 +71,7 @@ templates/
 2. Auth.js owns OAuth user and account persistence through the Prisma adapter.
 3. Dashboard actions create or load a playground record.
 4. The playground route loads saved template data or scans a starter from `templates/forge-starters`.
-5. The file explorer and Monaco editor manipulate the in-memory project tree.
+5. The file explorer and Monaco editor manipulate the in-memory project tree. Open tabs are keyed by normalized file path so duplicate filenames in different folders remain distinct.
 6. WebContainers boot the project runtime inside the browser.
 7. Terminal and preview panels connect to the WebContainer process.
 8. AI chat/completion endpoints provide coding assistance.

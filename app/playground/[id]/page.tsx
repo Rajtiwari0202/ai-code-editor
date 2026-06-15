@@ -28,7 +28,11 @@ import ToggleAI from "@/modules/playground/components/toggle-ai";
 import { useAISuggestions } from "@/modules/playground/hooks/useAISuggestion";
 import { useFileExplorer } from "@/modules/playground/hooks/useFileExplorer";
 import { usePlayground } from "@/modules/playground/hooks/usePlayground";
-import { findFilePath } from "@/modules/playground/lib";
+import {
+  findFilePath,
+  getTemplateFileName,
+  joinTemplatePath,
+} from "@/modules/playground/lib";
 import {
   TemplateFile,
   TemplateFolder,
@@ -176,8 +180,8 @@ const MainPlaygroundPage = () => {
   const activeFile = openFiles.find((file) => file.id === activeFileId);
   const hasUnsavedChanges = openFiles.some((file) => file.hasUnsavedChanges);
 
-  const handleFileSelect = (file: TemplateFile) => {
-    openFile(file);
+  const handleFileSelect = (file: TemplateFile, filePath: string) => {
+    openFile(file, filePath);
   };
 
   const handleSave = useCallback(
@@ -193,7 +197,8 @@ const MainPlaygroundPage = () => {
       if (!latestTemplateData) return
 
       try {
-            const filePath = findFilePath(fileToSave, latestTemplateData);
+            const filePath =
+              fileToSave.path || findFilePath(fileToSave, latestTemplateData);
         if (!filePath) {
           toast.error(
             `Could not find path for file: ${fileToSave.filename}.${fileToSave.fileExtension}`
@@ -206,17 +211,29 @@ const MainPlaygroundPage = () => {
         ) as TemplateFolder;
 
           const updateFileContent = (
-            items: (TemplateFile | TemplateFolder)[]
+            items: (TemplateFile | TemplateFolder)[],
+            currentPath = ""
           ): (TemplateFile | TemplateFolder)[] =>
           items.map((item) => {
             if ("folderName" in item) {
-              return { ...item, items: updateFileContent(item.items) };
-            } else if (
-              item.filename === fileToSave.filename &&
-              item.fileExtension === fileToSave.fileExtension
-            ) {
+              return {
+                ...item,
+                items: updateFileContent(
+                  item.items,
+                  joinTemplatePath(currentPath, item.folderName)
+                ),
+              };
+            }
+
+            const itemPath = joinTemplatePath(
+              currentPath,
+              getTemplateFileName(item)
+            );
+
+            if (itemPath === filePath) {
               return { ...item, content: fileToSave.content };
             }
+
             return item;
           });
         updatedTemplateData.items = updateFileContent(
@@ -239,6 +256,7 @@ const MainPlaygroundPage = () => {
           f.id === targetFileId
             ? {
                 ...f,
+                path: filePath,
                 content: fileToSave.content,
                 originalContent: fileToSave.content,
                 hasUnsavedChanges: false,
@@ -363,6 +381,7 @@ const MainPlaygroundPage = () => {
           data={templateData!}
           onFileSelect={handleFileSelect}
           selectedFile={activeFile}
+          selectedFilePath={activeFile?.id}
           title="File Explorer"
           onAddFile={wrappedHandleAddFile}
           onAddFolder={wrappedHandleAddFolder}
