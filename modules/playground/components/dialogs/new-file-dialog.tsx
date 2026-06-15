@@ -12,6 +12,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React from "react";
+import {
+  getFileExtensionError,
+  getPathSegmentError,
+  normalizeFileExtension,
+} from "../../lib/item-name-validation";
 
 interface NewFileDialogProps {
   isOpen: boolean;
@@ -22,14 +27,26 @@ interface NewFileDialogProps {
 function NewFileDialog({ isOpen, onClose, onCreateFile }: NewFileDialogProps) {
   const [filename, setFilename] = React.useState("");
   const [extension, setExtension] = React.useState("js");
+  const [error, setError] = React.useState<string | null>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (filename.trim()) {
-      onCreateFile(filename.trim(), extension.trim() || "js");
-      setFilename("");
-      setExtension("js");
+
+    const trimmedFilename = filename.trim();
+    const normalizedExtension = normalizeFileExtension(extension, "js");
+    const nextError =
+      getPathSegmentError(trimmedFilename, "Filename") ||
+      getFileExtensionError(normalizedExtension);
+
+    if (nextError) {
+      setError(nextError);
+      return;
     }
+
+    onCreateFile(trimmedFilename, normalizedExtension);
+    setFilename("");
+    setExtension("js");
+    setError(null);
   };
 
   return (
@@ -50,7 +67,10 @@ function NewFileDialog({ isOpen, onClose, onCreateFile }: NewFileDialogProps) {
               <Input
                 id="filename"
                 value={filename}
-                onChange={(e) => setFilename(e.target.value)}
+                onChange={(e) => {
+                  setFilename(e.target.value);
+                  setError(null);
+                }}
                 className="col-span-2"
                 autoFocus
                 placeholder="main"
@@ -63,11 +83,17 @@ function NewFileDialog({ isOpen, onClose, onCreateFile }: NewFileDialogProps) {
               <Input
                 id="extension"
                 value={extension}
-                onChange={(e) => setExtension(e.target.value)}
+                onChange={(e) => {
+                  setExtension(e.target.value);
+                  setError(null);
+                }}
                 className="col-span-2"
                 placeholder="js"
               />
             </div>
+            {error && (
+              <p className="col-span-3 text-sm text-destructive">{error}</p>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
@@ -83,4 +109,4 @@ function NewFileDialog({ isOpen, onClose, onCreateFile }: NewFileDialogProps) {
   );
 }
 
-export default NewFileDialog;   
+export default NewFileDialog;

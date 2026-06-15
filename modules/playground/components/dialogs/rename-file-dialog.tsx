@@ -12,7 +12,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React from "react";
-
+import {
+  getFileExtensionError,
+  getPathSegmentError,
+  normalizeFileExtension,
+} from "../../lib/item-name-validation";
 
 interface RenameFileDialogProps {
   isOpen: boolean;
@@ -31,19 +35,34 @@ function RenameFileDialog({
 }: RenameFileDialogProps) {
   const [filename, setFilename] = React.useState(currentFilename);
   const [extension, setExtension] = React.useState(currentExtension);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (isOpen) {
       setFilename(currentFilename);
       setExtension(currentExtension);
+      setError(null);
     }
   }, [isOpen, currentFilename, currentExtension]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (filename.trim()) {
-      onRename(filename.trim(), extension.trim() || currentExtension);
+
+    const trimmedFilename = filename.trim();
+    const normalizedExtension = normalizeFileExtension(
+      extension,
+      currentExtension
+    );
+    const nextError =
+      getPathSegmentError(trimmedFilename, "Filename") ||
+      getFileExtensionError(normalizedExtension);
+
+    if (nextError) {
+      setError(nextError);
+      return;
     }
+
+    onRename(trimmedFilename, normalizedExtension);
   };
 
   return (
@@ -62,7 +81,10 @@ function RenameFileDialog({
               <Input
                 id="rename-filename"
                 value={filename}
-                onChange={(e) => setFilename(e.target.value)}
+                onChange={(e) => {
+                  setFilename(e.target.value);
+                  setError(null);
+                }}
                 className="col-span-2"
                 autoFocus
               />
@@ -74,10 +96,16 @@ function RenameFileDialog({
               <Input
                 id="rename-extension"
                 value={extension}
-                onChange={(e) => setExtension(e.target.value)}
+                onChange={(e) => {
+                  setExtension(e.target.value);
+                  setError(null);
+                }}
                 className="col-span-2"
               />
             </div>
+            {error && (
+              <p className="col-span-3 text-sm text-destructive">{error}</p>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>

@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import React from "react";
+import { getPathSegmentError } from "../../lib/item-name-validation";
 
 interface RenameFolderDialogProps {
   isOpen: boolean;
@@ -27,18 +28,27 @@ function RenameFolderDialog({
   currentFolderName,
 }: RenameFolderDialogProps) {
   const [folderName, setFolderName] = React.useState(currentFolderName);
+  const [error, setError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (isOpen) {
       setFolderName(currentFolderName);
+      setError(null);
     }
   }, [isOpen, currentFolderName]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (folderName.trim()) {
-      onRename(folderName.trim());
+
+    const trimmedFolderName = folderName.trim();
+    const nextError = getPathSegmentError(trimmedFolderName, "Folder name");
+
+    if (nextError) {
+      setError(nextError);
+      return;
     }
+
+    onRename(trimmedFolderName);
   };
 
   return (
@@ -59,11 +69,17 @@ function RenameFolderDialog({
               <Input
                 id="rename-foldername"
                 value={folderName}
-                onChange={(e) => setFolderName(e.target.value)}
+                onChange={(e) => {
+                  setFolderName(e.target.value);
+                  setError(null);
+                }}
                 className="col-span-2"
                 autoFocus
               />
             </div>
+            {error && (
+              <p className="col-span-3 text-sm text-destructive">{error}</p>
+            )}
           </div>
           <DialogFooter>
             <Button type="button" variant="outline" onClick={onClose}>
