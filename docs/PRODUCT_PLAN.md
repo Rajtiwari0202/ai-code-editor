@@ -24,11 +24,13 @@ Status: in progress.
 - Replace broken template/image references and add final Open Graph metadata. Complete.
 - Keep bundled starters runnable through `npm run start`. Complete for React, Next.js, Express, Hono, Vue, and Angular.
 - Add a template validation command. Complete.
+- Add documentation link validation. Complete.
 - Scope playground mutations to the authenticated owner. Complete.
 - Remove nonfunctional dashboard actions before launch. Complete for repository import.
 - Remove broken dashboard sidebar links and empty action icons. Complete.
 - Add public terms and privacy pages for OAuth sign-in links. Complete.
 - Keep file explorer create, delete, and rename operations synced with the live WebContainer filesystem. Complete.
+- Prevent duplicate or invalid file and folder names inside the playground explorer. Complete.
 
 ## Phase 3: AI Layer Hardening
 
@@ -58,10 +60,11 @@ Status: deployment-ready locally; external services still need provisioning.
 - Configure OAuth providers.
 - Configure model provider or local-model instructions. Documented for Ollama and OpenAI-compatible providers.
 - Add environment validation command. Complete.
-- Add CI release gates for env validation, template validation, lint, and build. Complete.
+- Add CI release gates for env validation, docs validation, template validation, production dependency audit, lint, and build. Complete.
+- Declare Node.js and npm runtime requirements. Complete.
 - Include runtime starter files in serverless output tracing. Complete.
 - Add an automated production smoke check and public health endpoint. Complete, including protected API auth contracts and cross-origin isolation headers.
-- Add release checklist and deployment docs. Complete.
+- Add release checklist, deployment docs, operations runbook, and GitHub contribution templates. Complete.
 - Verify local production build and static public routes. Complete.
 - Verify WebContainer browser requirements in production.
 - Deploy to Vercel or another Node-compatible host.
@@ -73,6 +76,7 @@ The project is ready for a public release when:
 
 - `npm run lint` exits successfully.
 - `npm run build` exits successfully.
+- `npm run verify:release` exits successfully.
 - Required environment variables are documented and validated.
 - The app can authenticate a user.
 - A user can create/open a playground.
