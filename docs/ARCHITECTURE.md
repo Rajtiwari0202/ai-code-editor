@@ -26,7 +26,7 @@ Next.js App
 External/Local Services
   OAuth providers
   MongoDB-compatible database
-  Ollama or local model provider
+  Ollama or OpenAI-compatible model provider
   WebContainers runtime in supported browsers
 ```
 
@@ -57,7 +57,7 @@ modules/
 lib/
   db.ts                    Prisma client
   template.ts              Starter template path registry
-  ai/                      Planning/patch contracts and Ollama client
+  ai/                      Provider abstraction, planning/patch contracts, and request schemas
   verification/            Command allowlist helpers
   workspace/               Local agent capability contract
 

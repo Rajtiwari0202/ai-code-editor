@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/Rajtiwari0202/ai-code-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/Rajtiwari0202/ai-code-editor/actions/workflows/ci.yml)
 
-Forge Editor is a browser-based AI code editor built with Next.js, Monaco Editor, WebContainers, NextAuth, Prisma, and local AI workflows. It gives developers a web IDE with project templates, file exploration, code editing, terminal execution, live preview, AI chat, and code completion.
+Forge Editor is a browser-based AI code editor built with Next.js, Monaco Editor, WebContainers, NextAuth, Prisma, and server-side AI workflows. It gives developers a web IDE with project templates, file exploration, code editing, terminal execution, live preview, AI chat, and code completion.
 
 The product direction is simple: keep AI useful, visible, and reviewable. The app should help a developer plan changes, edit code, run projects, and verify work without hiding important context or mutating code without approval.
 
@@ -31,7 +31,7 @@ The product direction is simple: keep AI useful, visible, and reviewable. The ap
 | Editor | Monaco Editor |
 | Runtime | WebContainers |
 | Terminal | xterm.js |
-| AI | Ollama/local model routes and planning contracts |
+| AI | Ollama and OpenAI-compatible provider routes, plus planning contracts |
 
 ## Project Structure
 
@@ -103,7 +103,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000).
 
-## Local AI Setup
+## AI Provider Setup
 
 The default AI flow is designed for local model providers such as Ollama.
 
@@ -111,9 +111,13 @@ The default AI flow is designed for local model providers such as Ollama.
 ollama run codellama
 ```
 
-You can swap the model in the API route implementation as the provider layer matures.
-`OLLAMA_BASE_URL` and `OLLAMA_MODEL` can be changed per environment.
-Hosted deployments can use an OpenAI-compatible chat-completions provider without exposing keys to the browser.
+`OLLAMA_BASE_URL` and `OLLAMA_MODEL` can be changed per environment. Hosted deployments can use an OpenAI-compatible chat-completions provider without exposing keys to the browser:
+
+```env
+AI_PROVIDER=openai-compatible
+OPENAI_API_KEY=...
+OPENAI_MODEL=gpt-4.1-mini
+```
 
 ## Scripts
 
@@ -122,7 +126,7 @@ npm run dev      # Start development server
 npm run lint     # Run ESLint
 npm run build    # Build for production
 npm run start    # Start production server
-npm run smoke:prod  # Boot the production server and smoke test public routes
+npm run smoke:prod  # Boot the production server and smoke test public routes, protected API auth, and isolation headers
 npm run validate:env  # Check required deployment environment variables
 npm run validate:templates  # Check bundled starter template contract
 ```
