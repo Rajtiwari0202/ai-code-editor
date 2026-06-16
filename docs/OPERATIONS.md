@@ -44,6 +44,7 @@ Minimum checks for launch:
 - Major upgrades for Next.js and Prisma are intentionally not automatic; plan them as explicit migration work with release notes and rollback notes.
 - When `npm run audit:prod` reports high or critical production advisories, treat the fix as release-blocking.
 - Track remaining moderate advisories in the release notes or a follow-up issue when the safe fix path requires a major framework migration.
+- CodeQL runs on pushes, pull requests, and a weekly schedule. Triage confirmed findings before production release.
 
 ## Incident Response
 

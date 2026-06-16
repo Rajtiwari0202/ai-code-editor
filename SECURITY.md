@@ -38,3 +38,7 @@ The release verifier includes dependency audit, public routes, protected API aut
 ## Dependency Updates
 
 Dependabot is configured for npm and GitHub Actions updates. Security fixes that resolve high or critical production dependency advisories should be prioritized before release. Major framework upgrades, especially Next.js and Prisma, should be handled as planned migrations with release verification and rollback notes.
+
+## Static Analysis
+
+CodeQL runs on pushes, pull requests, and a weekly schedule for JavaScript and TypeScript. Treat confirmed code scanning alerts as release-blocking when they affect authentication, project ownership, AI provider secrets, stored project data, or deployment boundaries.
