@@ -1,23 +1,61 @@
 # Forge Editor
 
 [![CI](https://github.com/Rajtiwari0202/ai-code-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/Rajtiwari0202/ai-code-editor/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/Rajtiwari0202/ai-code-editor/actions/workflows/codeql.yml/badge.svg)](https://github.com/Rajtiwari0202/ai-code-editor/actions/workflows/codeql.yml)
 
-Forge Editor is a browser-based AI code editor built with Next.js, Monaco Editor, WebContainers, NextAuth, Prisma, and server-side AI workflows. It gives developers a web IDE with project templates, file exploration, code editing, terminal execution, live preview, AI chat, and code completion.
+Forge Editor is a browser-based AI code editor for creating projects, editing files, running templates, previewing apps, and reviewing AI suggestions from one focused workspace.
 
-The product direction is simple: keep AI useful, visible, and reviewable. The app should help a developer plan changes, edit code, run projects, and verify work without hiding important context or mutating code without approval.
+[Live Demo](https://aicodeeditor-sand.vercel.app) | [Architecture](./docs/ARCHITECTURE.md) | [Deployment](./docs/DEPLOYMENT.md) | [Project Profile](./docs/PROJECT_PROFILE.md)
 
-## Features
+![Forge Editor landing page](./public/screenshots/landing.png)
 
-- Authentication with Auth.js/NextAuth, Google, and GitHub providers.
-- Dashboard for creating, opening, starring, and managing playground projects.
+## Why It Exists
+
+Modern AI coding tools are powerful, but they often hide too much of the work. Forge Editor is built around a different product idea: keep the developer in control. AI can help plan, explain, review, and suggest code, while the editor keeps files, terminal output, previews, and project state visible.
+
+The result is a full-stack web IDE foundation with authentication, persisted playgrounds, starter templates, Monaco editing, WebContainers, terminal execution, live preview, and provider-backed AI assistance.
+
+## Screenshots
+
+| Public product page | OAuth sign-in |
+| --- | --- |
+| ![Forge Editor public landing page](./public/screenshots/landing.png) | ![Forge Editor sign-in page](./public/screenshots/sign-in.png) |
+
+| Workspace preview |
+| --- |
+| ![Forge Editor workspace preview](./public/forge-editor-thumbnail.svg) |
+
+## Product Highlights
+
+- Google and GitHub OAuth authentication through Auth.js/NextAuth.
+- Dashboard for creating, opening, starring, duplicating, renaming, and deleting playgrounds.
 - Template-driven project creation for React, Next.js, Express, Hono, Vue, and Angular.
-- Monaco-powered editor with syntax highlighting and AI completion hooks.
-- File explorer with create, rename, delete, and folder management flows.
-- WebContainers runtime for in-browser installs, commands, terminal sessions, and preview.
-- AI chat assistant for project-aware code help.
-- Theme provider with light and dark mode support.
-- Safe planning API contracts for future patch generation and verification workflows.
-- Prisma schema for persisted users, OAuth accounts, playgrounds, templates, and JWT-backed sessions.
+- Monaco editor with tabs, syntax-aware editing, inline AI completion hooks, and file tree actions.
+- Browser-contained runtime through WebContainers, with terminal and preview panels.
+- AI chat sidebar for project-aware coding help, review, fix, and optimization prompts.
+- Provider abstraction for local Ollama and hosted OpenAI-compatible chat-completions APIs.
+- Prisma + MongoDB persistence for users, OAuth accounts, playgrounds, saved files, and chat records.
+- Release gates for environment validation, docs validation, template validation, dependency audit, lint, build, smoke tests, CI, Dependabot, and CodeQL.
+
+## Architecture
+
+```mermaid
+flowchart LR
+  Browser["Browser UI"] --> Routes["Next.js App Router"]
+  Routes --> Auth["Auth.js OAuth"]
+  Routes --> API["Server API Routes"]
+  API --> Prisma["Prisma Client"]
+  Prisma --> Mongo["MongoDB"]
+  API --> AI["AI Provider Layer"]
+  AI --> Ollama["Ollama"]
+  AI --> Hosted["OpenAI-Compatible Provider"]
+  Browser --> Editor["Monaco Editor"]
+  Browser --> WebContainers["WebContainers Runtime"]
+  WebContainers --> Terminal["xterm.js Terminal"]
+  WebContainers --> Preview["Live Preview"]
+```
+
+Forge Editor separates browser-only runtime work from server-owned secrets. OAuth credentials, database URLs, and AI provider keys stay server-side. WebContainers execute inside the browser, while persisted playground state is scoped to the authenticated user before reads or writes reach Prisma.
 
 ## Tech Stack
 
@@ -25,91 +63,75 @@ The product direction is simple: keep AI useful, visible, and reviewable. The ap
 | --- | --- |
 | Framework | Next.js App Router |
 | Language | TypeScript |
-| UI | Tailwind CSS, shadcn-style components, Radix UI |
-| Auth | NextAuth |
-| Database | Prisma with MongoDB-compatible connection |
+| UI | Tailwind CSS, Radix UI, shadcn-style primitives |
+| Auth | Auth.js / NextAuth with Google and GitHub OAuth |
+| Database | Prisma with MongoDB |
 | Editor | Monaco Editor |
 | Runtime | WebContainers |
 | Terminal | xterm.js |
-| AI | Ollama and OpenAI-compatible provider routes, plus planning contracts |
+| AI | Ollama and OpenAI-compatible server routes |
+| Validation | Zod, custom env/template/docs checks |
+| Delivery | Vercel, GitHub Actions, Dependabot, CodeQL |
 
 ## Project Structure
 
 ```text
 app/
   (auth)/                  Sign-in route group
-  (root)/                  Public home route group
-  api/                     Auth, chat, completion, template, plan, patch, verify routes
-  dashboard/               Authenticated dashboard
-  playground/[id]/         Web IDE route
+  (root)/                  Public home, terms, privacy
+  api/                     Auth, chat, completion, template, plan, patch, verify, health
+  dashboard/               Authenticated playground dashboard
+  playground/[id]/         Browser IDE route
 components/
-  providers/               App providers
+  providers/               Theme, auth, toast, query, and app providers
   ui/                      Shared UI primitives
-docs/                      Architecture, product plan, deployment, contribution docs
-lib/                       DB, templates, AI contracts, verification helpers
+docs/                      Architecture, deployment, operations, release, profile docs
+lib/
+  ai/                      Provider abstraction, contracts, planning, patch helpers
+  verification/            Verification command allowlist
+  workspace/               Local agent capability contract
+  db.ts                    Prisma client
+  site-url.ts              Production-safe URL helpers
+  template.ts              Starter template registry
 modules/
-  ai-chat/                 AI assistant panel
-  auth/                    Auth actions and components
+  ai-chat/                 Assistant side panel
+  auth/                    Sign-in and user controls
   dashboard/               Dashboard actions and UI
-  home/                    Public landing sections
-  playground/              Editor, explorer, dialogs, hooks, utilities
-  webcontainers/           Terminal, preview, WebContainer hooks
+  home/                    Public product sections
+  playground/              Editor, explorer, tabs, hooks, dialogs
+  webcontainers/           Runtime, terminal, preview orchestration
 prisma/
-  schema.prisma            Data model
+  schema.prisma            MongoDB data model
 templates/
-  forge-starters/          Runnable starter projects loaded by the playground
+  forge-starters/          Runnable starter projects
 ```
 
 ## Getting Started
+
+Use Node.js 20 or newer and npm 10 or newer.
 
 ```bash
 git clone https://github.com/Rajtiwari0202/ai-code-editor.git
 cd ai-code-editor
 npm install
-```
-
-Use Node.js 20 or newer with npm 10 or newer.
-
-Create `.env.local` from the example:
-
-```bash
 cp .env.example .env.local
 ```
 
-Fill in the core required values:
+Fill the required environment variables:
 
 ```env
-AUTH_SECRET=
-AUTH_GOOGLE_ID=
-AUTH_GOOGLE_SECRET=
-AUTH_GITHUB_ID=
-AUTH_GITHUB_SECRET=
 DATABASE_URL=
 NEXTAUTH_URL=http://localhost:3000
 NEXT_PUBLIC_SITE_URL=http://localhost:3000
+
+AUTH_SECRET=
+AUTH_GITHUB_ID=
+AUTH_GITHUB_SECRET=
+AUTH_GOOGLE_ID=
+AUTH_GOOGLE_SECRET=
 ```
 
-Then choose the AI provider posture for your environment:
-
-```env
-AI_PROVIDER=ollama
-OLLAMA_BASE_URL=http://localhost:11434
-OLLAMA_MODEL=codellama:latest
-```
-
-For hosted AI, use the OpenAI-compatible mode instead:
-
-```env
-AI_PROVIDER=openai-compatible
-OPENAI_API_KEY=
-OPENAI_BASE_URL=https://api.openai.com/v1
-OPENAI_MODEL=
-```
-
-`OLLAMA_BASE_URL` and `OLLAMA_MODEL` are optional for basic app boot because the API routes have defaults. Configure them when you want local AI chat and completion to call a specific Ollama host/model.
-For hosted AI, set `AI_PROVIDER=openai-compatible` and provide `OPENAI_API_KEY` plus `OPENAI_MODEL` on the server.
-
-Run the app:
+Run the development server:
 
 ```bash
 npm run dev
@@ -119,58 +141,89 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## AI Provider Setup
 
-The default AI flow is designed for local model providers such as Ollama.
+Forge Editor supports two AI modes.
+
+For local development with Ollama:
 
 ```bash
-ollama run codellama
+ollama pull codellama:latest
+ollama serve
 ```
 
-`OLLAMA_BASE_URL` and `OLLAMA_MODEL` can be changed per environment. Hosted deployments can use an OpenAI-compatible chat-completions provider without exposing keys to the browser:
+```env
+AI_PROVIDER=ollama
+OLLAMA_BASE_URL=http://127.0.0.1:11434
+OLLAMA_MODEL=codellama:latest
+```
+
+For hosted production AI, use any OpenAI-compatible chat-completions provider:
 
 ```env
 AI_PROVIDER=openai-compatible
-OPENAI_API_KEY=...
-OPENAI_MODEL=gpt-4.1-mini
+OPENAI_API_KEY=
+OPENAI_BASE_URL=
+OPENAI_MODEL=
 ```
+
+Provider keys must stay server-side. Do not expose them through `NEXT_PUBLIC_*`.
 
 ## Scripts
 
-```bash
-npm run dev      # Start development server
-npm run lint     # Run ESLint
-npm run build    # Build for production
-npm run start    # Start production server
-npm run audit:prod  # Fail on high/critical production dependency advisories
-npm run smoke:prod  # Boot the production server and smoke test public/auth/metadata routes, protected API auth, and isolation headers
-npm run validate:env  # Check required environment variables from the shell, .env, or .env.local
-npm run validate:env:strict  # Check production-shaped environment values
-npm run validate:docs  # Check local documentation links
-npm run validate:templates  # Check bundled starter template contract
-npm run verify:release  # Run the complete local deployment gate
-```
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the local development server |
+| `npm run lint` | Run ESLint |
+| `npm run build` | Build the production app |
+| `npm run start` | Start the production server |
+| `npm run validate:env` | Validate required environment variables |
+| `npm run validate:env:strict` | Validate production-shaped environment values |
+| `npm run validate:docs` | Validate local documentation links |
+| `npm run validate:templates` | Validate starter template contracts |
+| `npm run audit:prod` | Fail on high/critical production dependency advisories |
+| `npm run smoke:prod` | Smoke test the built production server |
+| `npm run verify:release` | Run the full release gate |
 
-GitHub Actions runs the same release gates on `main` and pull requests.
+## Deployment
+
+The live deployment runs on Vercel:
+
+[https://aicodeeditor-sand.vercel.app](https://aicodeeditor-sand.vercel.app)
+
+Production requires:
+
+- `DATABASE_URL` for MongoDB.
+- `AUTH_SECRET` with a stable random value.
+- `NEXTAUTH_URL` and `NEXT_PUBLIC_SITE_URL` set to the production origin.
+- GitHub OAuth callback: `/api/auth/callback/github`.
+- Google OAuth callback: `/api/auth/callback/google`.
+- An intentional AI provider posture, either local-model documentation or hosted OpenAI-compatible credentials.
+
+Read [Deployment](./docs/DEPLOYMENT.md), [Release Checklist](./docs/RELEASE_CHECKLIST.md), and [Operations Runbook](./docs/OPERATIONS.md) before a production release.
 
 ## Documentation
 
 - [Architecture](./docs/ARCHITECTURE.md)
-- [Product Plan](./docs/PRODUCT_PLAN.md)
+- [AI Workflows](./docs/AI_WORKFLOWS.md)
+- [Templates](./docs/TEMPLATES.md)
 - [Deployment](./docs/DEPLOYMENT.md)
 - [Operations Runbook](./docs/OPERATIONS.md)
 - [Release Checklist](./docs/RELEASE_CHECKLIST.md)
-- [Templates](./docs/TEMPLATES.md)
-- [AI Workflows](./docs/AI_WORKFLOWS.md)
-- [Security Policy](./SECURITY.md)
+- [Product Plan](./docs/PRODUCT_PLAN.md)
+- [Project Profile](./docs/PROJECT_PROFILE.md)
 - [Contributing](./docs/CONTRIBUTING.md)
-- Public pages: [Terms](./app/(root)/terms/page.tsx) and [Privacy](./app/(root)/privacy/page.tsx)
+- [Security Policy](./SECURITY.md)
 
-## Current Status
+## Project Status
 
-The project now has a real product foundation: authentication, dashboard, playground editor, persisted template files, bundled starter projects, WebContainers, terminal, preview, AI chat/completion routes, and planning APIs. Lint, production build, and environment validation are part of the release preflight. The remaining launch work is operational: provision MongoDB, configure OAuth callbacks, choose the production AI provider posture, and verify WebContainers in the deployed browser environment.
+Forge Editor is deployed with working OAuth, database-backed playground ownership, public legal pages, production health checks, WebContainer-ready isolation headers, CI release gates, dependency automation, and security scanning. The AI layer is provider-configurable: Ollama is best for local development, while hosted OpenAI-compatible providers are best for Vercel production.
 
-## Deployment
+Remaining product growth areas:
 
-The Next.js app can deploy to Vercel or another Node-compatible host. WebContainers and OAuth require careful environment setup and browser compatibility checks. See [Deployment](./docs/DEPLOYMENT.md) before publishing.
+- Streaming AI responses.
+- Richer prompt templates and model selection.
+- Reviewable diff application from AI patch proposals.
+- Verification command execution from the existing allowlisted contract.
+- More authenticated production screenshots for portfolio use.
 
 ## License
 

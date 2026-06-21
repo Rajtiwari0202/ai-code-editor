@@ -54,10 +54,10 @@ Status: in progress.
 
 ## Phase 5: Deployment
 
-Status: deployment-ready locally; external services still need provisioning.
+Status: deployed on Vercel; OAuth and database-backed sign-in are verified. Production AI remains provider-configurable through hosted OpenAI-compatible credentials or local Ollama instructions.
 
-- Provision database.
-- Configure OAuth providers.
+- Provision database. Complete.
+- Configure OAuth providers. Complete for GitHub and Google.
 - Configure model provider or local-model instructions. Documented for Ollama and OpenAI-compatible providers.
 - Add environment validation command. Complete.
 - Add CI release gates for env validation, docs validation, template validation, production dependency audit, lint, and build. Complete.
@@ -66,9 +66,9 @@ Status: deployment-ready locally; external services still need provisioning.
 - Add an automated production smoke check and public health endpoint. Complete, including protected API auth contracts and cross-origin isolation headers.
 - Add release checklist, deployment docs, operations runbook, and GitHub contribution templates. Complete.
 - Verify local production build and static public routes. Complete.
-- Verify WebContainer browser requirements in production.
-- Deploy to Vercel or another Node-compatible host.
-- Add production screenshots after the hosted URL is live.
+- Verify WebContainer browser requirements in production. Headers are deployed; browser smoke testing remains part of release operations.
+- Deploy to Vercel or another Node-compatible host. Complete on Vercel.
+- Add production screenshots after the hosted URL is live. Complete for public and sign-in surfaces.
 
 ## Definition Of Done
 
