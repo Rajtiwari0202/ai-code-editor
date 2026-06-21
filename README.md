@@ -2,8 +2,9 @@
 
 [![CI](https://github.com/Rajtiwari0202/ai-code-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/Rajtiwari0202/ai-code-editor/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/Rajtiwari0202/ai-code-editor/actions/workflows/codeql.yml/badge.svg)](https://github.com/Rajtiwari0202/ai-code-editor/actions/workflows/codeql.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-Forge Editor is a browser-based AI code editor for creating projects, editing files, running templates, previewing apps, and reviewing AI suggestions from one focused workspace.
+Forge Editor is a browser-based AI code editor for starting projects, editing files, running templates, previewing apps, and reviewing AI suggestions from one workspace.
 
 [Live Demo](https://aicodeeditor-sand.vercel.app) | [Architecture](./docs/ARCHITECTURE.md) | [Deployment](./docs/DEPLOYMENT.md) | [Project Profile](./docs/PROJECT_PROFILE.md)
 
@@ -11,9 +12,9 @@ Forge Editor is a browser-based AI code editor for creating projects, editing fi
 
 ## Why It Exists
 
-Modern AI coding tools are powerful, but they often hide too much of the work. Forge Editor is built around a different product idea: keep the developer in control. AI can help plan, explain, review, and suggest code, while the editor keeps files, terminal output, previews, and project state visible.
+AI coding tools are useful when they keep the developer close to the work. Forge Editor keeps the important pieces on screen: the file tree, editor, terminal, preview, saved project state, and assistant output.
 
-The result is a full-stack web IDE foundation with authentication, persisted playgrounds, starter templates, Monaco editing, WebContainers, terminal execution, live preview, and provider-backed AI assistance.
+The app is a full-stack web IDE foundation with authentication, persisted playgrounds, starter templates, Monaco editing, WebContainers, terminal execution, live preview, and provider-backed AI assistance.
 
 ## Screenshots
 
@@ -55,7 +56,7 @@ flowchart LR
   WebContainers --> Preview["Live Preview"]
 ```
 
-Forge Editor separates browser-only runtime work from server-owned secrets. OAuth credentials, database URLs, and AI provider keys stay server-side. WebContainers execute inside the browser, while persisted playground state is scoped to the authenticated user before reads or writes reach Prisma.
+Forge Editor keeps browser runtime work separate from server-owned secrets. OAuth credentials, database URLs, and AI provider keys stay server-side. WebContainers execute inside the browser, while persisted playground state is scoped to the authenticated user before reads or writes reach Prisma.
 
 ## Tech Stack
 
@@ -215,7 +216,7 @@ Read [Deployment](./docs/DEPLOYMENT.md), [Release Checklist](./docs/RELEASE_CHEC
 
 ## Project Status
 
-Forge Editor is deployed with working OAuth, database-backed playground ownership, public legal pages, production health checks, WebContainer-ready isolation headers, CI release gates, dependency automation, and security scanning. The AI layer is provider-configurable: Ollama is best for local development, while hosted OpenAI-compatible providers are best for Vercel production.
+Forge Editor is deployed with working OAuth, database-backed playground ownership, public legal pages, production health checks, WebContainer-ready isolation headers, CI release gates, dependency automation, and security scanning. The AI layer is provider-configurable: Ollama fits local development, while hosted OpenAI-compatible providers fit Vercel production.
 
 Remaining product growth areas:
 
@@ -227,4 +228,4 @@ Remaining product growth areas:
 
 ## License
 
-No open-source license has been selected yet. Choose and add a license file before broad public redistribution.
+Forge Editor is released under the [MIT License](./LICENSE).

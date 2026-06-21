@@ -48,6 +48,6 @@ Use this checklist before publishing a production build of Forge Editor.
 ## Launch Notes
 
 - Keep production screenshots current when major UI surfaces change.
-- Choose an open-source license before broad public redistribution.
+- Keep the MIT license file and README license section current.
 - Record the deployed commit, operator, smoke-test result, and rollback plan in the operations runbook.
 - Keep OAuth, database, and AI provider ownership documented for future maintenance.

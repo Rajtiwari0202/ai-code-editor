@@ -10,13 +10,13 @@ Forge Editor is a full-stack browser IDE that combines authenticated playgrounds
 
 ## Portfolio Summary
 
-Forge Editor is a production-deployed AI code editor built to feel like a real development workspace rather than a generated demo. It supports OAuth sign-in, database-backed playgrounds, starter templates, file persistence, browser-based runtime execution, terminal output, live previews, and a server-side AI provider layer.
+Forge Editor is a production-deployed AI code editor with OAuth sign-in, database-backed playgrounds, starter templates, file persistence, browser-based runtime execution, terminal output, live previews, and a server-side AI provider layer.
 
 The project focuses on developer control. AI suggestions are surfaced through explicit chat and completion routes, while planning, patch, and verification APIs are structured for future reviewable workflows instead of silent file mutation.
 
 ## Problem
 
-Most browser IDE demos stop at a static editor or a shallow AI prompt box. Forge Editor takes the harder path: it persists real users and projects, loads runnable templates, boots an in-browser runtime, keeps terminal and preview state visible, and protects production secrets behind server routes.
+Many browser IDE experiments stop at a static editor or a shallow prompt box. Forge Editor goes deeper: it persists real users and projects, loads runnable templates, boots an in-browser runtime, keeps terminal and preview state visible, and protects production secrets behind server routes.
 
 ## Solution
 

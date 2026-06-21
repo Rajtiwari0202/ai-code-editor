@@ -2,6 +2,7 @@
   "name": "forge-editor",
   "version": "0.1.0",
   "private": true,
+  "license": "MIT",
   "engines": {
     "node": ">=20.0.0",
     "npm": ">=10.0.0"
